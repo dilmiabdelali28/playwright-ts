@@ -1,3 +1,3 @@
 "DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","1206","un utilisateur bloqué voit un message d'erreur","","2026-07-01","passed","2026-07-01","Sauce Demo","tests-e2e/saucedemo/saucedemo.spec.ts","",""
-"","1330","un utilisateur valide se connecte et voit l'inventaire","","2026-07-01","passed","2026-07-01","Sauce Demo","tests-e2e/saucedemo/saucedemo.spec.ts","",""
+"","3879","un utilisateur bloqué voit un message d'erreur","","2026-07-01","passed","2026-07-01","Sauce Demo","tests-e2e/saucedemo/saucedemo.spec.ts","",""
+"","4042","un utilisateur valide se connecte et voit l'inventaire","","2026-07-01","passed","2026-07-01","Sauce Demo","tests-e2e/saucedemo/saucedemo.spec.ts","",""
