@@ -1,9 +1,9 @@
-name: "🖥 :) ALL Tests : Execution"
+name: “🖥 :) ALL Tests : Execution”
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 12 * * 1-5" # Every weekday
+    - cron: “0 12 * * 1-5" # Every weekday at 2AM
   push:
     branches:
       - main
@@ -12,11 +12,12 @@ permissions:
   contents: write
 
 env:
-  NODE_VERSION: "20"
-  FEATURE: "all"
-  ALLURE_VERSION: "2.19.0"
-  EXECUTE_TYPE: "CI"
+  NODE_VERSION: “20”  
+  FEATURE: “all”
+  ALLURE_VERSION: “2.19.0”
+  EXECUTE_TYPE: “CI”
 
+# Ensures that only one deploy task per branch/environment will run at a time.
 concurrency:
   group: environment-${{ github.ref }}-os
   cancel-in-progress: true
@@ -24,55 +25,56 @@ concurrency:
 jobs:
   run-e2e-tests:
     runs-on: ubuntu-22.04
-    name: "🕹️ Run E2E tests"
-
+    name: “:joystick: Run E2E tests”
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # important pour l'historique git
+          fetch-depth: 1
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
 
       - name: Install dependencies
-        run: npm ci && npx playwright install --with-deps
+        run: npm install && npx playwright install --with-deps
 
-      - name: Run tests
+      - name: Play tests
+        # env:
+        #   AUTH_USER: ${{ secrets.AUTH_USER }}
+        #   AUTH_PASSWORD: ${{ secrets.AUTH_PASSWORD }}
+        #   RETRY_TEST_NUMBER: ${{ secrets.RETRY_TEST_NUMBER }}
+        #   PARALLEL_SCENARIOS_NUMBER: 5
+        #   SCENARIOS_NOTPARALLEL_EXECUTION: ${{ secrets.SCENARIOS_NOTPARALLEL_EXECUTION }}
         run: npm run test:smoke
 
-      # 👉 Récupération de l’historique Allure
-      - name: Get Allure history
+      - name: Get Allure history for history trend
         uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
           ref: gh-pages-all
-          path: gh-pages-all
+          path: allure-history
 
-      # 👉 Génération report + injection history
-      - name: Generate Allure report
+      - name: Setup Allure report
         uses: simple-elf/allure-report-action@master
         if: always()
-        id: allure
+        id: allure-report
         continue-on-error: true
         with:
           allure_results: report/allure-results
-          allure_history: gh-pages-all
+          gh_pages: gh-pages-all
           allure_report: allure-report
-          keep_reports: 20
+          allure_history: allure-history
+          keep_reports: 5
 
-      # 👉 Publication GitHub Pages (historique conservé)
-      - name: Deploy Allure report
+      - name: Deploy report to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages-all
           publish_dir: allure-report
-          keep_files: true
-          user_name: "GitHub Actions"
-          user_email: "actions@github.com"
-          commit_message: "Update Allure report"
+          publish_branch: gh-pages-all
+          user_name: ‘GitHub Actions’
+          user_email: ‘actions@github.com’
+          commit_message: ‘Deploy Allure report to gh-pages-all branch’
