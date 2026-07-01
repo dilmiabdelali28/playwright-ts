@@ -29,17 +29,11 @@
     "ts-check": "tsgo --noEmit --skipLibCheck"
   },
   "devDependencies": {
-    "@faker-js/faker": "catalog:",
     "@playwright/test": "^1.53.0",
-    "@types/lodash": "catalog:",
-    "@types/node": "catalog:",
     "allure-commandline": "^2.34.1",
     "allure-playwright": "^3.4.2",
     "axe-core": "4.8.4",
-    "axios": "catalog:",
     "bson-objectid": "^2.0.4",
-    "moment": "^2.30.1",
-    "moment-timezone": "catalog:",
-    "typescript": "catalog:"
+    "moment": "^2.30.1"
   }
 }
