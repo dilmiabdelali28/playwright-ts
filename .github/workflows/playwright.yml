@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 env:
   NODE_VERSION: "20"
   FEATURE: "all"
@@ -25,18 +28,21 @@ jobs:
     name: "🕹️ Run E2E tests"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      - uses: actions/setup-node@v3
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm install && npx playwright install
+        run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps
 
       - name: Play tests
         # env:
@@ -45,10 +51,10 @@ jobs:
         #   RETRY_TEST_NUMBER: ${{ secrets.RETRY_TEST_NUMBER }}
         #   PARALLEL_SCENARIOS_NUMBER: 5
         #   SCENARIOS_NOTPARALLEL_EXECUTION: ${{ secrets.SCENARIOS_NOTPARALLEL_EXECUTION }}
-        run: npm run test:all
+        run: pnpm run test:smoke
 
       - name: Get Allure history for history trend
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
@@ -61,7 +67,7 @@ jobs:
         id: allure-report
         continue-on-error: true
         with:
-          allure_results: reports/allure-results
+          allure_results: report/allure-results
           gh_pages: gh-pages-all
           allure_report: allure-report
           allure_history: allure-history
@@ -71,7 +77,7 @@ jobs:
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets._GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-report
           publish_branch: gh-pages-all
           user_name: 'GitHub Actions'
