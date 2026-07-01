@@ -8,11 +8,8 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "20"  
   FEATURE: "all"
   ALLURE_VERSION: "2.19.0"
   EXECUTE_TYPE: "CI"
@@ -28,21 +25,18 @@ jobs:
     name: "🕹️ Run E2E tests"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 1
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "pnpm"
-          cache-dependency-path: pnpm-lock.yaml
+          cache: "npm"
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps
+        run: npm install && npx playwright install
 
       - name: Play tests
         # env:
@@ -51,10 +45,10 @@ jobs:
         #   RETRY_TEST_NUMBER: ${{ secrets.RETRY_TEST_NUMBER }}
         #   PARALLEL_SCENARIOS_NUMBER: 5
         #   SCENARIOS_NOTPARALLEL_EXECUTION: ${{ secrets.SCENARIOS_NOTPARALLEL_EXECUTION }}
-        run: pnpm run test:smoke
+        run: npm run test:smoke
 
       - name: Get Allure history for history trend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
         if: always()
         continue-on-error: true
         with:
@@ -67,7 +61,7 @@ jobs:
         id: allure-report
         continue-on-error: true
         with:
-          allure_results: report/allure-results
+          allure_results: reports/allure-results
           gh_pages: gh-pages-all
           allure_report: allure-report
           allure_history: allure-history
@@ -77,7 +71,7 @@ jobs:
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.TOKEN }}
           publish_dir: allure-report
           publish_branch: gh-pages-all
           user_name: 'GitHub Actions'
