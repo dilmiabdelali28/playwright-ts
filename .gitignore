@@ -4,6 +4,6 @@ playwright-report/
 test-results/
 report/allure-results/
 report/allure-report/
-
+node_modules/
 # playwright auth tokens storages for each environment
 auth/*/
