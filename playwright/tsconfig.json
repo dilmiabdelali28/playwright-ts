@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "paths": {
+      "$fixtures/*": ["./fixtures/*"],
+      "$support/*": ["./support/*"],
+      "@helpers/*": ["./helpers/*"],
+      "@/*": ["./*"]
+    },
+    "types": ["node", "@playwright/test"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts", "data/**/*.json"]
+}

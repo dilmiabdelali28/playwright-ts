@@ -1,0 +1,102 @@
+{
+  "ileDeFrance": {
+    "_id": "5e5dafe018bb1b1dce020cb6",
+    "anaelCode": "00113",
+    "officeName": "FONCIA AGENCE CENTRALE",
+    "region": "ILE_DE_FRANCE"
+  },
+  "vendee": {
+    "_id": "5e5dafe0b84f4c4645020c81",
+    "fonciaLogin": "0790",
+    "__v": 0,
+    "activity": {
+      "startDate": "2007-09-30T22:00:00.000Z",
+      "status": "OPEN"
+    },
+    "address": {
+      "completeAddress": "4 Rue du Patio 85160 Saint-Jean-de-Monts France",
+      "address1": "4 Rue du Patio",
+      "zipCode": "85160",
+      "city": "Saint-Jean-de-Monts",
+      "country": "France",
+      "countryCode": "FRA"
+    },
+    "anaelCode": "00167",
+    "businessIdentificationCode": "6832A",
+    "capital": 3160300,
+    "codeWorkDay": "00167",
+    "companyRegister": {
+      "city": "LA ROCHE-SUR-YON",
+      "department": "Vendée",
+      "number": "RCS LA ROCHE-SUR-YON 452396575",
+      "registryOffice": "CCI"
+    },
+    "condoPropertyManagemenCard": {
+      "number": "CPI85012018000024502",
+      "place": "CCI Vendée",
+      "registryOffice": "CCI"
+    },
+    "createdAt": "2021-12-16T09:15:22.388Z",
+    "director": "Monsieur",
+    "email": "vendee@foncia.fr",
+    "financialTrusteeGuarantee": {
+      "checkOut": "GALIAN",
+      "amount": {
+        "value": 904000000,
+        "currency": "EUR"
+      },
+      "policyNumber": "100667V",
+      "address": {
+        "completeAddress": "89 Rue de la Boétie 75008 Paris France",
+        "address1": "89 Rue de la Boétie",
+        "zipCode": "75008",
+        "city": "Paris",
+        "country": "France",
+        "countryCode": "FRA"
+      }
+    },
+    "intraCommunityVat": "FR75452396575",
+    "isMillenium": true,
+    "kyribaCode": "0167S",
+    "legalForm": "5710",
+    "listFonciaLogin": ["0790"],
+    "managementCard": {
+      "number": "CPI85012018000024502",
+      "place": "CCI Vendée",
+      "registryOffice": "CCI"
+    },
+    "officeName": "FONCIA VENDEE",
+    "rcp": {
+      "companyName": "MMA ENTREPRISE",
+      "policyNumber": "114.239.964"
+    },
+    "region": "NORD_OUEST",
+    "regionAnalytic": "Grand-Ouest",
+    "rentalManagementFinancialGuarantee": {
+      "checkOut": "GALIAN",
+      "amount": {
+        "value": 470000000,
+        "currency": "EUR"
+      },
+      "address": {
+        "completeAddress": "89 Rue de la Boétie 75008 Paris France",
+        "address1": "89 Rue de la Boétie",
+        "zipCode": "75008",
+        "city": "Paris",
+        "country": "France",
+        "countryCode": "FRA"
+      },
+      "policyNumber": "100667V"
+    },
+    "siren": "452396575",
+    "siret": "45239657500071",
+    "telephone": "+33251580229",
+    "updatedAt": "2023-07-09T07:06:13.310Z",
+    "milleniumOpeningServiceDate": "2021-07-03T11:32:57.657Z",
+    "sellerCard": {
+      "number": "CPI85012018000024502",
+      "place": "CCI Vendée",
+      "registryOffice": "CCI"
+    }
+  }
+}

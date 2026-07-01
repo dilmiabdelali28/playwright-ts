@@ -1,0 +1,13 @@
+{
+  "name": "playwright-e2e",
+  "targets": {
+    "test:smoke": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "echo 'Playwright smoke tests are run via dedicated CI job (playwright:ra:*), not build affected'"
+      },
+      "cache": true,
+      "inputs": ["production", "^production"]
+    }
+  }
+}

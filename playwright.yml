@@ -1,0 +1,447 @@
+.with_playwright_before_script:
+  before_script:
+    - npm install -g corepack@latest
+    - corepack enable && corepack prepare --activate
+    - rm -f /etc/apt/sources.list.d/microsoft-edge.list
+    - mkdir -p /usr/share/man/man1
+    - apt-get update && apt-get -y install default-jre
+    - cd playwright
+    - !reference [.with_pnpm_store, before_script]
+    - pnpm -F playwright-e2e... install --frozen-lockfile
+    - npx playwright install chrome
+
+.playwright-smoke:
+  stage: acc-test-e2e
+  extends:
+    - .with_pnpm_install
+    - .with_cypress_image
+  variables:
+    MODULE_PATH: "playwright"
+    OKTA_ISSUER: "https://login.dev1.fonciamillenium.net/oauth2/default"
+  before_script:
+    - !reference [.with_playwright_before_script, before_script]
+  cache:
+    - key:
+        prefix: 3_${MODULE_PATH}-${DIRECTORY}_pnpm-lock
+        files:
+          - pnpm-lock.yaml
+      paths:
+        - node_modules
+        - cache
+      policy: pull
+  after_script:
+    - cd playwright
+    - if [ -d report/allure-results ]; then pnpm run allure:generate || true; fi
+  artifacts:
+    when: always
+    paths:
+      - playwright/report/allure-results/
+      - playwright/report/allure-report/
+      - playwright/playwright-report/
+      - playwright/test-results/
+    expire_in: 7 days
+
+# Cypress smoke — gate bloquant : un échec fait échouer le pipeline.
+cypress:test:e2e:
+  tags:
+    - kub-v2-medium
+  extends:
+    - .smoke
+  parallel: 15
+  timeout: 30m
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+
+# Playwright smoke — gate bloquant sur master (allow_failure: false).
+# Les tests en cours de stabilisation utilisent le tag @monitoring (job playwright:test:monitoring, non bloquant).
+playwright:test:e2e:
+  tags:
+    - kub-v2-medium
+  parallel: 4
+  extends:
+    - .playwright-smoke
+  script:
+    - pnpm exec playwright test --grep "@smoke" --workers=3 --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL
+  after_script:
+    - cd playwright
+    - echo "Shard $CI_NODE_INDEX/$CI_NODE_TOTAL complete"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+      allow_failure: false
+
+playwright:test:monitoring:
+  tags:
+    - kub-v2-medium
+  extends:
+    - .playwright-smoke
+  script:
+    - pnpm exec playwright test --grep "@monitoring" --workers=4
+  after_script:
+    - cd playwright
+    - echo "Monitoring run complete"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: manual
+      allow_failure: true
+
+.playwright_publish_index:
+  script:
+    - |
+      publish_playwright_index() {
+        HISTORY_LIMIT="${HISTORY_LIMIT:-20}"
+        fetch_meta() { aws s3 cp "s3://${S3_BUCKET}/$1" - 2>/dev/null || echo "{}"; }
+        meta_field() { echo "$1" | jq -r ".${2} // \"${3:-}\""; }
+        build_history_link() {
+          local href="$1" pipeline_id="$2" meta="$3" status passed failed broken flaky branch date icon color stats
+          status=$(meta_field "$meta" status unknown)
+          passed=$(meta_field "$meta" passed "-"); failed=$(meta_field "$meta" failed "-")
+          broken=$(meta_field "$meta" broken "-"); flaky=$(meta_field "$meta" flaky "-")
+          branch=$(meta_field "$meta" branch ""); date=$(meta_field "$meta" date "")
+          case "$status" in passed) icon="✅"; color="#16a34a" ;; failed) icon="❌"; color="#dc2626" ;; *) icon="⬜"; color="#6b7280" ;; esac
+          stats=""; if [ "$passed" != "-" ]; then
+            stats="<span class=\"h-stat passed\">${passed} passed</span><span class=\"h-stat failed\">${failed} failed</span><span class=\"h-stat broken\">${broken} broken</span><span class=\"h-stat flaky\">${flaky} flaky</span>"
+          fi
+          printf '%s\n' "          <a href=\"${href}\"><span class=\"h-left\"><span class=\"h-icon\">${icon}</span><span class=\"h-info\"><span class=\"h-pipeline\" style=\"color:${color}\">Pipeline #${pipeline_id}</span><span class=\"h-meta\">${branch}${date:+ · }${date}</span></span></span><span class=\"h-right\">${stats}<span class=\"arrow\">→</span></span></a>"
+        }
+        render_hero() {
+          cat <<HERO
+              <div class="stats">
+                <span class="pill passed">✅ $1 passed</span><span class="pill failed">❌ $2 failed</span>
+                <span class="pill broken">💥 $3 broken</span><span class="pill flaky">🔥 $4 flaky</span><span class="pill total">📊 $5 total</span>
+              </div>
+              <a href="$9" class="card-latest"><div class="icon">🚀</div><h2 class="$6">${10}</h2>
+                <div class="desc">Pipeline #$7 — résultats complets Allure</div><div class="branch">Branch: $8</div></a>
+      HERO
+        }
+        DEV1_LINKS=""
+        for pipeline_id in $(aws s3 ls "s3://${S3_BUCKET}/history/" 2>/dev/null | awk '{print $2}' | tr -d '/' | sort -rn | head -n "${HISTORY_LIMIT}"); do
+          META=$(fetch_meta "history/${pipeline_id}/meta.json")
+          DEV1_LINKS="${DEV1_LINKS}$(build_history_link "/history/${pipeline_id}/index.html" "${pipeline_id}" "${META}")"
+        done
+        RA_CARDS=""; LATEST_RA=""; LATEST_RA_PIPELINE=0
+        for ra_name in $(aws s3 ls "s3://${S3_BUCKET}/ra/" 2>/dev/null | awk '{print $2}' | tr -d '/' | sort); do
+          aws s3 ls "s3://${S3_BUCKET}/ra/${ra_name}/latest-meta.json" >/dev/null 2>&1 || continue
+          META=$(fetch_meta "ra/${ra_name}/latest-meta.json")
+          RA_PIPELINE=$(meta_field "$META" pipeline 0)
+          RA_STATUS=$(meta_field "$META" status unknown); RA_PASSED=$(meta_field "$META" passed "-"); RA_FAILED=$(meta_field "$META" failed "-")
+          RA_BRANCH=$(meta_field "$META" branch ""); RA_DATE=$(meta_field "$META" date "")
+          case "$RA_STATUS" in passed) RA_ICON="✅"; RA_COLOR="#16a34a" ;; failed) RA_ICON="❌"; RA_COLOR="#dc2626" ;; *) RA_ICON="⬜"; RA_COLOR="#6b7280" ;; esac
+          RA_CARDS="${RA_CARDS}<a href=\"/ra/${ra_name}/latest/index.html\"><span class=\"h-left\"><span class=\"h-icon\">${RA_ICON}</span><span class=\"h-info\"><span class=\"h-pipeline\" style=\"color:${RA_COLOR}\">${ra_name}</span><span class=\"h-meta\">${RA_BRANCH}${RA_DATE:+ · }${RA_DATE}</span></span></span><span class=\"h-right\"><span class=\"h-stat passed\">${RA_PASSED} passed</span><span class=\"h-stat failed\">${RA_FAILED} failed</span><span class=\"arrow\">→</span></span></a>"
+          if [ "$RA_PIPELINE" -gt "$LATEST_RA_PIPELINE" ] 2>/dev/null; then LATEST_RA_PIPELINE="$RA_PIPELINE"; LATEST_RA="$ra_name"; fi
+        done
+        D_META=$(fetch_meta "history/${CI_PIPELINE_ID}/meta.json")
+        D_PASSED=$(meta_field "$D_META" passed 0); D_FAILED=$(meta_field "$D_META" failed 0); D_BROKEN=$(meta_field "$D_META" broken 0)
+        D_FLAKY=$(meta_field "$D_META" flaky 0); D_TOTAL=$(meta_field "$D_META" total 0)
+        D_PIPELINE=$(meta_field "$D_META" pipeline "${CI_PIPELINE_ID}"); D_BRANCH=$(meta_field "$D_META" branch "${CI_COMMIT_REF_NAME}")
+        if [ "$((D_FAILED + D_BROKEN))" -gt 0 ] 2>/dev/null; then D_CLASS="has-failures"; else D_CLASS="passing"; fi
+        if [ -n "$LATEST_RA" ]; then
+          R_META=$(fetch_meta "ra/${LATEST_RA}/latest-meta.json")
+          R_PASSED=$(meta_field "$R_META" passed 0); R_FAILED=$(meta_field "$R_META" failed 0); R_BROKEN=$(meta_field "$R_META" broken 0)
+          R_FLAKY=$(meta_field "$R_META" flaky 0); R_TOTAL=$(meta_field "$R_META" total 0)
+          R_PIPELINE=$(meta_field "$R_META" pipeline latest); R_BRANCH=$(meta_field "$R_META" branch ""); R_HREF="/ra/${LATEST_RA}/latest/index.html"
+        else
+          R_PASSED=0; R_FAILED=0; R_BROKEN=0; R_FLAKY=0; R_TOTAL=0; R_PIPELINE="-"; R_BRANCH="-"; R_HREF="/ra/"
+        fi
+        if [ "$((R_FAILED + R_BROKEN))" -gt 0 ] 2>/dev/null; then R_CLASS="has-failures"; else R_CLASS="passing"; fi
+        MON_LINKS=""; LATEST_MON_META="{}"; LATEST_MON_PIPELINE=0
+        for pipeline_id in $(aws s3 ls "s3://${S3_BUCKET}/monitoring/history/" 2>/dev/null | awk '{print $2}' | tr -d '/' | sort -rn | head -n "${HISTORY_LIMIT}"); do
+          META=$(fetch_meta "monitoring/history/${pipeline_id}/meta.json")
+          MON_LINKS="${MON_LINKS}$(build_history_link "/monitoring/history/${pipeline_id}/index.html" "${pipeline_id}" "${META}")"
+          if [ "$pipeline_id" -gt "$LATEST_MON_PIPELINE" ] 2>/dev/null; then LATEST_MON_PIPELINE="$pipeline_id"; LATEST_MON_META="$META"; fi
+        done
+        M_PASSED=$(meta_field "$LATEST_MON_META" passed 0); M_FAILED=$(meta_field "$LATEST_MON_META" failed 0); M_BROKEN=$(meta_field "$LATEST_MON_META" broken 0)
+        M_FLAKY=$(meta_field "$LATEST_MON_META" flaky 0); M_TOTAL=$(meta_field "$LATEST_MON_META" total 0)
+        M_PIPELINE=$(meta_field "$LATEST_MON_META" pipeline "-"); M_BRANCH=$(meta_field "$LATEST_MON_META" branch "")
+        if [ "$((M_FAILED + M_BROKEN))" -gt 0 ] 2>/dev/null; then M_CLASS="has-failures"; else M_CLASS="passing"; fi
+        cat > /tmp/playwright-index.html << HTMLEOF
+      <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>"><title>Playwright Reports · Emeria</title>
+      <style>
+        *{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+        .hero{background:linear-gradient(180deg,#a8c8f0 0%,#ccdff5 35%,#e8f1fb 65%,#f0f4f8 100%);min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px 80px;text-align:center}
+        .logo{margin-bottom:40px}.logo h1{font-size:2rem;color:#1a2340;font-weight:700}.logo .subtitle{color:#6b7a9a;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+        .env-switch{display:flex;gap:8px;justify-content:center;margin-bottom:32px;flex-wrap:wrap}
+        .env-btn{padding:10px 28px;border-radius:999px;border:none;font-weight:600;font-size:.9rem;cursor:pointer;background:rgba(255,255,255,.5);color:#6b7280}
+        .env-btn.active{background:#fff;color:#1a2340;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+        .panel{display:none;width:100%;flex-direction:column;align-items:center}.panel.active{display:flex}
+        .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:32px}
+        .pill{background:#fff;border-radius:20px;padding:8px 18px;font-size:.875rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+        .pill.passed{color:#16a34a}.pill.failed{color:#dc2626}.pill.flaky{color:#ea580c}.pill.broken{color:#d97706}.pill.total{color:#2563eb}
+        .card-latest{background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.7);border-radius:14px;padding:28px 32px;text-decoration:none;max-width:480px;width:100%;box-shadow:0 6px 24px rgba(0,0,0,.1);display:block}
+        .card-latest .icon{font-size:2rem;margin-bottom:10px}.card-latest h2{font-size:1.25rem;margin-bottom:6px}.card-latest h2.passing{color:#16a34a}.card-latest h2.has-failures{color:#dc2626}
+        .card-latest .desc{color:#6b7280;font-size:.875rem}.card-latest .branch{color:#9ca3af;font-size:.8rem}
+        .content{max-width:800px;margin:0 auto;padding:40px 20px;width:100%}.content-panel{display:none}.content-panel.active{display:block}
+        .section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:12px;font-weight:600}
+        .history-list{display:flex;flex-direction:column;gap:6px}.history-list a{background:#fff;border-radius:8px;padding:14px 18px;text-decoration:none;color:#374151;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+        .h-left{display:flex;align-items:center;gap:12px}.h-icon{font-size:1.2rem}.h-info{display:flex;flex-direction:column;gap:2px}
+        .h-pipeline{font-size:.9rem;font-weight:600}.h-meta{font-size:.75rem;color:#9ca3af}.h-right{display:flex;align-items:center;gap:8px}
+        .h-stat{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:10px}.h-stat.passed{background:#dcfce7;color:#16a34a}.h-stat.failed{background:#fee2e2;color:#dc2626}
+        .h-stat.broken{background:#fef3c7;color:#d97706}.h-stat.flaky{background:#ffedd5;color:#ea580c}.arrow{color:#d1d5db;margin-left:8px}.empty{text-align:center;color:#9ca3af;padding:32px}
+        footer{background:#1a2340;color:#6b7a9a;padding:32px 20px;text-align:center;font-size:.85rem;margin-top:20px}footer a{color:#9ca3af;text-decoration:none}
+      </style></head><body>
+        <div class="hero"><div class="logo"><h1>🎭 Playwright Reports</h1><div class="subtitle">Emeria · Millenium QA</div></div>
+          <div class="env-switch"><button class="env-btn active" data-env="dev1" onclick="showEnv('dev1')">DEV1</button><button class="env-btn" data-env="ra" onclick="showEnv('ra')">Review Apps</button><button class="env-btn" data-env="monitoring" onclick="showEnv('monitoring')">Monitoring</button></div>
+          <div id="panel-dev1" class="panel active">$(render_hero "$D_PASSED" "$D_FAILED" "$D_BROKEN" "$D_FLAKY" "$D_TOTAL" "$D_CLASS" "$D_PIPELINE" "$D_BRANCH" "/latest/index.html" "Latest Report")</div>
+          <div id="panel-ra" class="panel">$(render_hero "$R_PASSED" "$R_FAILED" "$R_BROKEN" "$R_FLAKY" "$R_TOTAL" "$R_CLASS" "$R_PIPELINE" "$R_BRANCH" "$R_HREF" "Latest Report · Review App")</div>
+          <div id="panel-monitoring" class="panel">$(render_hero "$M_PASSED" "$M_FAILED" "$M_BROKEN" "$M_FLAKY" "$M_TOTAL" "$M_CLASS" "$M_PIPELINE" "$M_BRANCH" "/monitoring/latest/index.html" "Latest Report · Monitoring")</div>
+        </div>
+        <div id="content-dev1" class="content content-panel active"><div class="section-title">Historique — ${HISTORY_LIMIT} derniers runs</div><div class="history-list">${DEV1_LINKS:-<div class="empty">Aucun run DEV1 disponible</div>}</div></div>
+        <div id="content-ra" class="content content-panel"><div class="section-title">Review Apps actives</div><div class="history-list">${RA_CARDS:-<div class="empty">Aucune Review App avec des résultats Playwright</div>}</div></div>
+        <div id="content-monitoring" class="content content-panel"><div class="section-title">Historique Monitoring — ${HISTORY_LIMIT} derniers runs</div><div class="history-list">${MON_LINKS:-<div class="empty">Aucun run Monitoring disponible</div>}</div></div>
+        <footer><p>Emeria Technologies · Millenium QA Platform</p><p style="margin-top:8px"><a href="https://ml-documentation.dev1.fonciamillenium.net">Documentation</a></p></footer>
+        <script>function showEnv(n){document.querySelectorAll('.env-btn').forEach(b=>b.classList.toggle('active',b.dataset.env===n));document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+n));document.querySelectorAll('.content-panel').forEach(p=>p.classList.toggle('active',p.id==='content-'+n));history.replaceState(null,'',n==='ra'?'#ra':n==='monitoring'?'#monitoring':'#dev1')}window.addEventListener('DOMContentLoaded',()=>showEnv(location.hash==='#ra'?'ra':location.hash==='#monitoring'?'monitoring':'dev1'));</script>
+      </body></html>
+      HTMLEOF
+        aws s3 cp /tmp/playwright-index.html "s3://${S3_BUCKET}/index.html" --content-type "text/html; charset=utf-8"
+      }
+      publish_playwright_index
+
+# Shared publish logic for both the smoke (dev1) and monitoring Allure reports.
+# Concrete jobs below only set their own `needs` + the two parameters that differ:
+#   REPORT_PREFIX — S3 sub-path ("" = bucket root for smoke, "monitoring/" for monitoring)
+#   SLACK_LABEL   — tag shown in the Slack footer (smoke / monitoring)
+.playwright_publish:
+  stage: acc-post-test
+  tags:
+    - kub-v2-medium
+  variables:
+    TARGET_ENV: "dev1"
+    BRAND: "foncia"
+    S3_BUCKET: "fon-mil-dev1-frt-statics-ml-playwright"
+    HISTORY_LIMIT: "20"
+    # Always keep the trailing slash so it concatenates cleanly (e.g. "${REPORT_PREFIX}latest/").
+    REPORT_PREFIX: ""
+    SLACK_LABEL: "smoke"
+    # Slack webhook for the run notification. Smoke posts to the default Playwright
+    # channel; monitoring overrides this with its own dedicated channel webhook.
+    SLACK_WEBHOOK_URL: "$PLAYWRIGHT_NOTIFICATION_SLACK_WEBHOOK_URL"
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq default-jre jq
+    - cd playwright
+    - !reference [.with_pnpm_store, before_script]
+    - pnpm -F playwright-e2e... install --frozen-lockfile
+    # Setup AWS profile — same pattern as deploy-front.yml
+    - eval export role_arn='$'ci_role_arn_"${BRAND}_${TARGET_ENV}"
+    - eval export aws_external_id='$'ci_aws_external_id_"${BRAND}_${TARGET_ENV}"
+    - aws --profile ${TARGET_ENV} configure set role_arn $role_arn
+    - aws --profile ${TARGET_ENV} configure set credential_source "Ec2InstanceMetadata"
+    - aws --profile ${TARGET_ENV} configure set external_id "${aws_external_id}"
+    - aws --profile ${TARGET_ENV} configure set region eu-west-3
+    - export AWS_PROFILE=${TARGET_ENV}
+  script:
+    # Download Allure history from previous run so trend charts are populated
+    - aws s3 sync s3://${S3_BUCKET}/${REPORT_PREFIX}latest/history/ report/allure-results/history/ || true
+    # Generate unified Allure report from all shards
+    - pnpm run allure:generate
+    # Sync latest report
+    - aws s3 sync report/allure-report/ s3://${S3_BUCKET}/${REPORT_PREFIX}latest/ --delete
+    # Archive current run in history
+    - aws s3 sync report/allure-report/ s3://${S3_BUCKET}/${REPORT_PREFIX}history/${CI_PIPELINE_ID}/
+    # Upload all videos (video:"on") and traces to S3
+    - |
+      if [ -d test-results ] && [ "$(ls -A test-results 2>/dev/null)" ]; then
+        aws s3 sync test-results/ s3://${S3_BUCKET}/${REPORT_PREFIX}history/${CI_PIPELINE_ID}/artifacts/ \
+          --exclude "*" \
+          --include "*.webm" \
+          --include "*.zip" || true
+      fi
+    # Keep only last 20 runs
+    - |
+      aws s3 ls s3://${S3_BUCKET}/${REPORT_PREFIX}history/ \
+        | awk '{print $2}' | sort -n | head -n -${HISTORY_LIMIT} \
+        | xargs -I{} aws s3 rm --recursive s3://${S3_BUCKET}/${REPORT_PREFIX}history/{} || true
+    # Compute test stats (used for index.html and Slack notification)
+    - |
+      if find report/allure-report/data/test-cases -name '*.json' | grep -q .; then
+        flaky_tests=$(
+          find report/allure-report/data/test-cases -name '*.json' -exec jq -r '
+            select(
+              .status == "passed" and
+              .retriesCount > 0 and
+              .retriesStatusChange == true
+            ) | "\(.fullName) \"\(.name)\""
+          ' {} + 2>/dev/null || true
+        )
+      else
+        flaky_tests=""
+      fi
+      if [ -f report/allure-report/widgets/summary.json ]; then
+        PASSED=$(jq '.statistic.passed'   report/allure-report/widgets/summary.json)
+        FAILED=$(jq '.statistic.failed'   report/allure-report/widgets/summary.json)
+        BROKEN=$(jq '.statistic.broken'   report/allure-report/widgets/summary.json)
+        SKIPPED=$(jq '.statistic.skipped' report/allure-report/widgets/summary.json)
+        TOTAL=$(jq  '.statistic.total'    report/allure-report/widgets/summary.json)
+        FLAKY=$(printf '%s\n' "$flaky_tests" | grep -c . || true)
+      else
+        PASSED=0; FAILED=0; BROKEN=0; SKIPPED=0; TOTAL=0; FLAKY=0
+      fi
+      if [ "$((FAILED + BROKEN))" -gt 0 ]; then
+        LATEST_CLASS="has-failures"
+        RUN_STATUS="failed"
+      else
+        LATEST_CLASS="passing"
+        RUN_STATUS="passed"
+      fi
+    # Save run metadata + per-scenario results to S3
+    - |
+      RUN_DATE_ISO=$(date '+%Y-%m-%d')
+      # meta.json — summary for the history cards
+      cat > /tmp/meta.json << METAEOF
+      {"pipeline":"${CI_PIPELINE_ID}","branch":"${CI_COMMIT_REF_NAME}","status":"${RUN_STATUS}","passed":${PASSED},"failed":${FAILED},"broken":${BROKEN},"flaky":${FLAKY},"skipped":${SKIPPED},"total":${TOTAL},"date":"${RUN_DATE_ISO}"}
+      METAEOF
+      aws s3 cp /tmp/meta.json s3://${S3_BUCKET}/${REPORT_PREFIX}history/${CI_PIPELINE_ID}/meta.json
+      # scenarios.json — one entry per test for this pipeline
+      find report/allure-results/ -name "*-result.json" \
+        | xargs jq -s '[.[] | {
+            name:     .fullName,
+            status:   .status,
+            flaky:    (.flaky // false),
+            duration: (.time.duration // 0),
+            pipeline: "'${CI_PIPELINE_ID}'",
+            branch:   "'${CI_COMMIT_REF_NAME}'",
+            date:     "'${RUN_DATE_ISO}'"
+          }] | sort_by(.name)' \
+        > /tmp/scenarios.json
+      aws s3 cp /tmp/scenarios.json s3://${S3_BUCKET}/${REPORT_PREFIX}history/${CI_PIPELINE_ID}/scenarios.json
+      # scenarios-trend.json — global file: last 20 runs per scenario
+      aws s3 cp s3://${S3_BUCKET}/${REPORT_PREFIX}scenarios-trend.json /tmp/trend.json 2>/dev/null || echo '{}' > /tmp/trend.json
+      while IFS= read -r scenario; do
+        SNAME=$(echo "$scenario"   | jq -r '.name')
+        SSTATUS=$(echo "$scenario" | jq -r '.status')
+        SFLAKY=$(echo "$scenario"  | jq -r '.flaky')
+        SDUR=$(echo "$scenario"    | jq -r '.duration')
+        jq --arg  name    "$SNAME"              \
+           --arg  status  "$SSTATUS"            \
+           --argjson flaky  "$SFLAKY"           \
+           --argjson dur    "$SDUR"             \
+           --arg  pipeline "${CI_PIPELINE_ID}"  \
+           --arg  date     "${RUN_DATE_ISO}"    \
+           '.[$name] = ((.[$name] // []) + [{pipeline:$pipeline,status:$status,flaky:$flaky,duration:$dur,date:$date}] | .[-20:])' \
+           /tmp/trend.json > /tmp/trend-new.json && mv /tmp/trend-new.json /tmp/trend.json
+      done < <(jq -c '.[]' /tmp/scenarios.json)
+      aws s3 cp /tmp/trend.json s3://${S3_BUCKET}/${REPORT_PREFIX}scenarios-trend.json
+    # Unified dashboard (DEV1 + Review Apps + Monitoring switcher)
+    - !reference [.playwright_publish_index, script]
+    - sh ../scripts/invalidate-cloudfront-cache.sh ${S3_BUCKET}
+    # Compute notification variables
+    - |
+      FLAKY_SPECS=$(find report/allure-results/ -name "*-result.json" \
+        | xargs -I{} jq -r 'select(.flaky == true) | .fullName' {} 2>/dev/null \
+        | sort -u | head -5 || echo "")
+      FAILED_SPECS=$(find report/allure-results/ -name "*-result.json" \
+        | xargs -I{} jq -r 'select(.status == "failed" and .flaky != true) | .fullName' {} 2>/dev/null \
+        | sort -u | head -5 || echo "")
+      REPORT_URL="https://ml-playwright.dev1.fonciamillenium.net/${REPORT_PREFIX}latest/"
+      if [ "${FAILED}" -gt 0 ] || [ "${BROKEN}" -gt 0 ]; then
+        STATUS_TEXT="Failed run"
+      else
+        STATUS_TEXT="Passed run"
+      fi
+    # Notify Slack (channel depends on SLACK_WEBHOOK_URL set at job level)
+    - |
+      if [ -n "${SLACK_WEBHOOK_URL}" ]; then
+        RUN_DATE=$(date '+%b %d')
+        COMMIT_TITLE=$(echo "${CI_COMMIT_TITLE}" | sed 's/"/\\"/g')
+        COMMIT_AUTHOR_NAME=$(echo "${CI_COMMIT_AUTHOR}" | sed 's/.*<\([^@]*\)@.*/\1/')
+        if [ "${FAILED}" -gt 0 ] || [ "${BROKEN}" -gt 0 ]; then
+          RESULT_LABEL="Failed"
+          SLACK_STATUS_ICON=":x:"
+        else
+          RESULT_LABEL="Passed"
+          SLACK_STATUS_ICON=":white_check_mark:"
+        fi
+        SPECS_BLOCKS=""
+        if { [ "${FAILED}" -gt 0 ] && [ -n "${FAILED_SPECS}" ]; } || { [ "${FLAKY}" -gt 0 ] && [ -n "${FLAKY_SPECS}" ]; }; then
+          SPECS_BLOCKS=",{\"type\":\"divider\"},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Specs for Review:*\"}},{\"type\":\"divider\"}"
+          while IFS= read -r spec; do
+            [ -z "$spec" ] && continue
+            SPECS_BLOCKS="${SPECS_BLOCKS},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":x: ${spec}   1 failed test   dev1\"}}"
+          done <<< "${FAILED_SPECS}"
+          while IFS= read -r spec; do
+            [ -z "$spec" ] && continue
+            SPECS_BLOCKS="${SPECS_BLOCKS},{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\":fire: ${spec}   1 flaky test   dev1\"}}"
+          done <<< "${FLAKY_SPECS}"
+        fi
+        METRICS_TEXT=""
+        add_metric_line() {
+          metric_line="$1"
+          metric_value="$2"
+          if [ "${metric_value}" -ne 0 ]; then
+            METRICS_TEXT="${METRICS_TEXT}${metric_line} ${metric_value}\\n"
+          fi
+        }
+        add_flaky_test_list() {
+          if [ "${FLAKY}" -ne 0 ]; then
+            METRICS_TEXT="${METRICS_TEXT}Flaky tests:\\n${flaky_tests}"
+          fi
+        }
+        add_metric_line ":x: *Failed:*" "${FAILED}"
+        add_metric_line ":boom: *Broken:*" "${BROKEN}"
+        add_metric_line ":white_check_mark: *Passed:*" "${PASSED}"
+        add_metric_line ":fire: *Flaky:*" "${FLAKY}"
+        add_metric_line ":no_entry_sign: *Skipped:*" "${SKIPPED}"
+        add_flaky_test_list
+        SAFE_METRICS_TEXT=$(printf '%s' "$METRICS_TEXT" | perl -0777 -pe '
+          s/\\n/\n/g;
+          s/\\/\\\\/g;
+          s/"/\\"/g;
+          s/\n/\\n/g;
+        ')
+        curl --silent -H "Content-Type: application/json" -d "{
+          \"blocks\": [
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*<${REPORT_URL}|Run #${CI_PIPELINE_ID}>:* ${COMMIT_TITLE}\"}},
+            {\"type\":\"context\",\"elements\":[
+              {\"type\":\"mrkdwn\",\"text\":\"${SLACK_STATUS_ICON} *${STATUS_TEXT}*\"},
+              {\"type\":\"mrkdwn\",\"text\":\":file_folder: Millenium\"},
+              {\"type\":\"mrkdwn\",\"text\":\":twisted_rightwards_arrows: ${CI_COMMIT_REF_NAME}\"},
+              {\"type\":\"mrkdwn\",\"text\":\":bust_in_silhouette: ${COMMIT_AUTHOR_NAME}\"},
+              {\"type\":\"mrkdwn\",\"text\":\":link: <${CI_PIPELINE_URL}|GitLab ${CI_PIPELINE_ID}>\"}
+            ]},
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"*Test Results:* ${RESULT_LABEL}\"}},
+            {\"type\":\"divider\"},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"${SAFE_METRICS_TEXT}\"}}
+            ${SPECS_BLOCKS}
+            ,{\"type\":\"divider\"}
+            ,{\"type\":\"context\",\"elements\":[
+              {\"type\":\"mrkdwn\",\"text\":\":label: dev1, ${SLACK_LABEL}\"},
+              {\"type\":\"mrkdwn\",\"text\":\":desktop_computer: dev1\"},
+              {\"type\":\"mrkdwn\",\"text\":\"🎭 Playwright Reports: <${REPORT_URL}|Playwright run #${CI_PIPELINE_ID}>\"},
+              {\"type\":\"mrkdwn\",\"text\":\":calendar: ${RUN_DATE}\"}
+            ]}
+          ]
+        }" "${SLACK_WEBHOOK_URL}" || true
+      fi
+
+# Publish even when smoke shards fail (when: always) so Allure is always available.
+# Pipeline stays red: playwright:test:e2e keeps allow_failure: false → tag green is skipped.
+playwright:publish:report:
+  extends: .playwright_publish
+  needs:
+    - job: "playwright:test:e2e 1/4"
+      artifacts: true
+    - job: "playwright:test:e2e 2/4"
+      artifacts: true
+    - job: "playwright:test:e2e 3/4"
+      artifacts: true
+    - job: "playwright:test:e2e 4/4"
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: always
+      allow_failure: true
+
+playwright:publish:monitoring:
+  extends: .playwright_publish
+  variables:
+    REPORT_PREFIX: "monitoring/"
+    SLACK_LABEL: "monitoring"
+    SLACK_WEBHOOK_URL: "$PLAYWRIGHT_MONITORING_NOTIFICATION_SLACK_WEBHOOK_URL"
+  needs:
+    - job: "playwright:test:monitoring"
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
+      allow_failure: true

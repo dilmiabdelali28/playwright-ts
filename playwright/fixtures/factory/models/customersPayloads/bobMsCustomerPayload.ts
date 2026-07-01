@@ -1,0 +1,63 @@
+export const bobMsCustomerPayload = {
+  qualities: ["CO_OWNER"],
+  contactPreferences: {
+    eventNotification: {
+      email: false,
+      postalMail: false,
+      sms: false,
+    },
+    litigationPrevention: {
+      email: false,
+      postalMail: false,
+      sms: false,
+    },
+    myFonciaNews: {
+      email: false,
+      postalMail: false,
+      sms: false,
+    },
+    newsLetter: {
+      email: false,
+      postalMail: false,
+      sms: false,
+    },
+    privilegedOffers: {
+      email: false,
+      postalMail: false,
+      sms: false,
+    },
+  },
+  consent: {
+    personalData: true,
+    partnersOffersInformation: false,
+    customerUpdatedAt: "2023-09-20T18:36:37.498Z",
+  },
+  civility: "MR",
+  firstName: "Bob",
+  lastName: "Playwright",
+  fullname: "Bob Playwright",
+  legalEntity: "PERSON",
+  birth: {
+    date: "1980-01-20T00:00:00.000Z",
+  },
+  address: {
+    address1: "adresse1_003063885",
+    address2: "adresse2_003063885",
+    zipCode: "75000",
+    city: "FONCIA VILLE",
+    countryCode: "FRA",
+  },
+  email: "003063885@foncia.fr",
+  landlinePhone: "01 45 00 00 00",
+  mobilePhone: "01 45 00 00 01",
+  languageCode: "FRA",
+  noSnailMail: true,
+  confidentialFax: false,
+  wishToBeContacted: false,
+  version: 0,
+  showDalenysHeadband: true,
+  contacts: [],
+  receiptRequestsLogs: [],
+  createdAt: "2023-09-20T18:36:37.498Z",
+  updatedAt: "2023-09-20T18:36:37.498Z",
+};

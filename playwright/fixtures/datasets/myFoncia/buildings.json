@@ -1,0 +1,209 @@
+{
+  "leParnassien": {
+    "_id": "5e5db02deb4528f38a7b08b9",
+    "buildingNumber": "500118790",
+    "buildingName": "LE PARNASSIEN",
+    "physicalBuildings": [
+      {
+        "access": {
+          "entrances": [
+            {
+              "info": {
+                "access": {
+                  "emitters": [],
+                  "pinpads": []
+                },
+                "migration": {
+                  "csvId": [],
+                  "legacyId": "0202-2360",
+                  "source": "THETRAWIN",
+                  "migrationDate": "2020-03-03T01:37:39.944Z"
+                },
+                "address": {
+                  "address1": "48 AVENUE DE LA REPUBLIQUE",
+                  "address2": "LE PARNASSIEN",
+                  "city": "MONTROUGE",
+                  "countryCode": "FRA",
+                  "zipCode": "92120",
+                  "completeAddress": "48 AVENUE DE LA REPUBLIQUE LE PARNASSIEN MONTROUGE 92120"
+                },
+                "alur": {
+                  "zone": "A"
+                }
+              }
+            }
+          ]
+        },
+        "identity": {
+          "physicalBuildingName": "Bâtiment A"
+        }
+      },
+      {
+        "access": {
+          "entrances": [
+            {
+              "info": {
+                "access": {
+                  "emitters": [],
+                  "pinpads": [
+                    {
+                      "_id": "60e14f7026e84d06e9e16700",
+                      "code": "B715",
+                      "usageStartDate": "2012-09-26T22:00:00.000Z"
+                    }
+                  ]
+                },
+                "migration": {
+                  "csvId": [],
+                  "legacyId": "0202-2418",
+                  "source": "THETRAWIN",
+                  "migrationDate": "2020-03-03T01:37:39.944Z"
+                },
+                "address": {
+                  "address1": "48 AVENUE DE LA REPUBLIQUE",
+                  "city": "MONTROUGE",
+                  "countryCode": "FRA",
+                  "zipCode": "92120",
+                  "completeAddress": "48 AVENUE DE LA REPUBLIQUE  MONTROUGE 92120"
+                },
+                "alur": {
+                  "zone": "A"
+                }
+              }
+            }
+          ]
+        },
+        "identity": {
+          "physicalBuildingName": "Bâtiment B"
+        }
+      }
+    ],
+    "managementType": "EXTERN_TRUSTEE",
+    "status": "ACTIVE"
+  },
+  "lePasteur": {
+    "address": {
+      "address1": "1 Bvd pasteur",
+      "zipCode": "75015",
+      "city": "Paris",
+      "completeAddress": "1 Bvd pasteur 75015 Paris"
+    },
+    "alur": {
+      "zone": "A"
+    },
+    "buildingName": "Nom de l'immeuble",
+    "managementType": "EXTERN_TRUSTEE",
+    "status": "ACTIVE"
+  },
+  "les3Anes": {
+    "address": {
+      "address1": "1 Bvd Le Vivien",
+      "zipCode": "75017",
+      "city": "Paris",
+      "completeAddress": "1 Bvd Le Vivien 75017 Paris"
+    },
+    "alur": {
+      "zone": "A"
+    },
+    "buildingName": "Les 3 ânes",
+    "managementType": "RENTAL_WHOLE_BUILDINGS_PROPERTY_MANAGEMENT",
+    "physicalBuildings": [],
+    "status": "ACTIVE"
+  },
+  "la3B": {
+    "address": {
+      "address1": "7 Bvd de la nation",
+      "zipCode": "77188",
+      "city": "Champs",
+      "completeAddress": "7 Bvd de la nation 77188 Champs"
+    },
+    "alur": {
+      "zone": "A"
+    },
+    "buildingName": "Les brasseurs 7",
+    "managementType": "EXTERN_TRUSTEE",
+    "status": "ACTIVE",
+    "accountingPeriod": {
+      "duration": 12
+    }
+  },
+  "forAGC": {
+    "kind": "BuildingComplet",
+    "buildingName": "<TO FILL>",
+    "numberOfElevators": 0,
+    "physicalBuildings": [
+      {
+        "identity": {
+          "physicalBuildingName": "Bâtiment A"
+        },
+        "access": {
+          "stairs": [],
+          "entrances": [
+            {
+              "info": {
+                "alur": {
+                  "zone": "A"
+                },
+                "access": {
+                  "pinpads": [],
+                  "emitters": []
+                },
+                "address": {
+                  "address1": "<TO FILL>",
+                  "zipCode": "75008",
+                  "city": "PARIS",
+                  "countryCode": "FRA",
+                  "completeAddress": "<TO FILL>"
+                }
+              },
+              "stairs": [],
+              "_id": "<TO FILL>"
+            }
+          ]
+        }
+      }
+    ],
+    "caretakerLodge": {
+      "timetables": []
+    },
+    "address": {
+      "address1": "<TO FILL>",
+      "zipCode": "75008",
+      "city": "PARIS",
+      "countryCode": "FRA",
+      "completeAddress": "<TO FILL>"
+    },
+    "coOwnershipDetails": {
+      "coOwnershipTrusteeStatus": true,
+      "compta": {
+        "cashflowThreshold": {
+          "value": 0,
+          "currency": "EUR"
+        },
+        "trusteeCouncilThreshold": {
+          "value": 0,
+          "currency": "EUR"
+        },
+        "accountingPeriod": {
+          "duration": 12
+        }
+      },
+      "coOwnershipMandate": "<TO FILL>"
+    },
+    "status": "ACTIVE",
+    "isDraft": true,
+    "employees": [],
+    "managementType": "FONCIA_TRUSTEE",
+    "tags": [],
+    "coOwnershipRegulation": {
+      "coOwnershipRegulationHistories": []
+    },
+    "version": 3,
+    "documents": [],
+    "equipments": [],
+    "otherManagementGroups": [],
+    "createdAt": "2023-12-14T13:23:33.960+0000",
+    "updatedAt": "2023-12-14T13:29:26.545+0000",
+    "__v": 0
+  }
+}

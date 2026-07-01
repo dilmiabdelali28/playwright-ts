@@ -1,0 +1,98 @@
+{
+  "karine": {
+    "_id": "60e1551a87612a001a1fdc30",
+    "active": true,
+    "maintainer": false,
+    "version": 17,
+    "externalId": "00u2zm5f2b9OCwj2Z0i7",
+    "FR": "fr105584",
+    "firstname": "Karine",
+    "lastname": "HIPPOCRATE",
+    "email": "karine.hippocrate@foncia.com",
+    "jobTitle": "PROPERTY_MANAGEMENT_MANAGER",
+    "cabinet": "0790",
+    "agency": "AGE_10102",
+    "matriculeRh": "00210710",
+    "idSociete": "00167",
+    "idEtablissement": "00167009",
+    "groups": [
+      {
+        "value": "60e14fac8778c60019117264",
+        "display": "OKTA_FR_ML_plato-adb-dev1"
+      }
+    ],
+    "createdAt": "2021-07-04T06:28:42.295Z",
+    "updatedAt": "2023-04-28T07:41:30.235Z",
+    "__v": 0,
+    "secondaryAssignments": [
+      {
+        "jobCode": "5",
+        "anaelCode": "00167009"
+      }
+    ]
+  },
+  "guilhem": {
+    "_id": "60e15525377f15001892222d",
+    "active": true,
+    "maintainer": false,
+    "version": 17,
+    "externalId": "00u3mojkokbOk9X6K0i7",
+    "FR": "fr140468",
+    "firstname": "Guilhem",
+    "lastname": "BARBU",
+    "email": "guilhem.barbu@foncia.com",
+    "jobTitle": "COOWNERSHIP_MANAGER",
+    "cabinet": "0202",
+    "agency": "AGE_11417",
+    "matriculeRh": "00303246",
+    "idSociete": "00113",
+    "idEtablissement": "00113013",
+    "groups": [
+      {
+        "value": "60e14fac8778c60019117264",
+        "display": "OKTA_FR_ML_plato-adb-dev1"
+      }
+    ],
+    "createdAt": "2021-07-04T06:28:42.295Z",
+    "updatedAt": "2023-04-28T07:41:30.235Z",
+    "__v": 0,
+    "secondaryAssignments": [
+      {
+        "jobCode": "20",
+        "anaelCode": "00113016"
+      }
+    ]
+  },
+  "yazid": {
+    "_id": "615ffa2a122cb20018e94da2",
+    "active": true,
+    "maintainer": false,
+    "version": 14,
+    "externalId": "00u3mojkokbOk9X6K0i7",
+    "FR": "fr131618",
+    "firstname": "Yazid",
+    "lastname": "BENKIRAT",
+    "email": "yazid.benkirat@foncia.com",
+    "jobTitle": "ACCOUNTANT",
+    "cabinet": "0202",
+    "agency": "AGE_11417",
+    "matriculeRh": "00303246",
+    "idSociete": "00113",
+    "idEtablissement": "00113013",
+    "groups": [
+      {
+        "value": "60e14fac8778c60019117264",
+        "display": "OKTA_FR_ML_plato-adb-dev1"
+      }
+    ],
+    "createdAt": "2021-07-04T06:28:42.295Z",
+    "updatedAt": "2023-04-28T07:41:30.235Z",
+    "__v": 0,
+    "secondaryAssignments": [
+      {
+        "jobCode": "20",
+        "anaelCode": "00113016"
+      }
+    ]
+  }
+}

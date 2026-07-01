@@ -1,0 +1,9 @@
+# Playwright
+pnpm-lock.yaml
+playwright-report/
+test-results/
+report/allure-results/
+report/allure-report/
+
+# playwright auth tokens storages for each environment
+auth/*/

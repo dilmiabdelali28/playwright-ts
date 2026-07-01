@@ -1,0 +1,32 @@
+{
+  "coldWater": {
+    "number": "0000000000",
+    "type": "COLD_WATER",
+    "measurementUnit": "M3",
+    "unitId": "62ca1680f0f568750d7f29d2"
+  },
+  "hotWater": {
+    "number": "0000000001",
+    "type": "HOT_WATER",
+    "measurementUnit": "M3",
+    "unitId": "62ca1680f0f568750d7f29d2"
+  },
+  "gas": {
+    "number": "0000000002",
+    "type": "GAS",
+    "measurementUnit": "M3",
+    "unitId": "62ca1680f0f568750d7f29d2"
+  },
+  "dispatcher": {
+    "number": "0000000003",
+    "type": "DISPATCHER",
+    "measurementUnit": "CAL",
+    "unitId": "62ca1680f0f568750d7f29d2"
+  },
+  "miscellaneous": {
+    "number": "0000000004",
+    "type": "MISCELLANEOUS",
+    "measurementUnit": "CAL",
+    "unitId": "62ca1680f0f568750d7f29d2"
+  }
+}

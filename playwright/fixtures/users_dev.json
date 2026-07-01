@@ -1,0 +1,229 @@
+{
+  "Pascale": {
+    "email": "lucie.germain@foncia.com",
+    "login": "fr156080",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Lucie",
+    "lastName": "GERMAIN",
+    "role": "COOWNERSHIP_MANAGER",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Christopher": {
+    "email": "christopher.djoboke-ekila@foncia.com",
+    "login": "fr159761",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Christopher",
+    "lastName": "DJOBOKE EKILA",
+    "role": "MIDDLE_OFFICE",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Alexandre": {
+    "email": "alexandre.huang@foncia.fr",
+    "login": "fr123938",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Alexandre",
+    "lastName": "HUANG",
+    "role": "RENTAL_PROPERTY_MANAGER",
+    "agency": ""
+  },
+  "Camille": {
+    "email": "julie.piscarel@foncia.com",
+    "login": "fr152501",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Laurence",
+    "lastName": "BERNIER",
+    "role": "COOWNERSHIP_MANAGER",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Paul": {
+    "email": "paul.chazal@foncia.fr",
+    "login": "fr147307",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Paul",
+    "lastName": "CHAZAL",
+    "role": "ACCOUNTANT",
+    "agency": "",
+    "comment": "TODO : user requires running a script to created test data for expense regularization"
+  },
+  "Celine": {
+    "email": "celine.bury@foncia.com",
+    "login": "fr130959",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Celine",
+    "lastName": "BURY",
+    "role": "COOWNERSHIP_MANAGER",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Pierre": {
+    "email": "pierre@foncia.com",
+    "login": "fr100828",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Pierre",
+    "lastName": "CLAVEL",
+    "role": "IMPERSONATE",
+    "agency": ""
+  },
+  "Olga": {
+    "email": "olga.elineau@foncia.fr",
+    "login": "fr148108",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Celine",
+    "lastName": "QUESME",
+    "role": "COOWNERSHIP_PROPERTY_MANAGER",
+    "agency": "Vendee"
+  },
+  "Didier": {
+    "email": "didier.rabechault@foncia.com",
+    "login": "fr119033",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Didier",
+    "lastName": "RABECHAULT",
+    "role": "TRANSVERSAL_DIRECTOR",
+    "agency": "FONCIA VENDEE"
+  },
+  "Sofian": {
+    "email": "anthony.trameau@foncia.com",
+    "login": "fr134331",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Anthony",
+    "lastName": "TRAMEAU",
+    "role": "ACCOUNTANT",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Yazid": {
+    "email": "yazid.benkirat@foncia.com",
+    "login": "fr143067",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Yazid",
+    "lastName": "Benkirat",
+    "role": "ACCOUNTANT",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Karine": {
+    "email": "karine.hippocrate@foncia.fr",
+    "login": "fr105584",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Karine",
+    "lastName": "HIPPOCRATE",
+    "role": "PROPERTY_MANAGEMENT_MANAGER",
+    "agency": ""
+  },
+  "Line": {
+    "email": "line.boisdron@foncia.com",
+    "login": "fr140764",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Line",
+    "lastName": "BOISDRON",
+    "role": "PROPERTY_MANAGEMENT_MANAGER",
+    "agency": "ANJOU MAINE"
+  },
+  "Audrey": {
+    "email": "audrey.nicolas@foncia.fr",
+    "login": "fr121393",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Audrey",
+    "lastName": "NICOLAS",
+    "role": "REAL_ESTATE_AGENT",
+    "fullName": "Audrey Nicolas",
+    "agency": "Ft Efimo - Fresnes"
+  },
+  "Isabelle": {
+    "email": "isabelle.charpin@foncia.com",
+    "login": "fr107535",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Isabelle",
+    "lastName": "CHARPIN",
+    "role": "REAL_ESTATE_AGENT",
+    "fullName": "Isabelle Charpin",
+    "agency": ""
+  },
+  "Philippe": {
+    "email": "gaillard119@foncia.fr",
+    "login": "fr103086",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Philippe",
+    "lastName": "GAILLARD",
+    "role": "SUPPORT_DIRECTOR",
+    "agency": ""
+  },
+  "Alain": {
+    "email": "marc.le.masson@wanadoo.fr",
+    "login": "marc.le.masson@wanadoo.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["CO_OWNER"]
+  },
+  "Eric": {
+    "email": "clasoret@numericable.fr",
+    "login": "clasoret@numericable.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["LESSOR", "CO-OWNER"]
+  },
+  "Elodie": {
+    "email": "jfdelpont@free.fr",
+    "login": "jfdelpont@free.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["CO-OWNER"]
+  },
+  "Charles": {
+    "email": "skandrani.salma@gmail.com",
+    "login": "skandrani.salma@gmail.com",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["TENANT"]
+  },
+  "Julien": {
+    "email": "ines.burger@orange.fr",
+    "login": "ines.burger@orange.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["LESSOR"]
+  },
+  "Valentin": {
+    "email": "abdelhediwalid@hotmail.fr",
+    "login": "abdelhediwalid@hotmail.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["CO-OWNER"]
+  },
+  "Anne": {
+    "email": "anne_clausier@yahoo.fr",
+    "login": "anne_clausier@yahoo.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["CO-OWNER"]
+  },
+  "Sophie": {
+    "email": "felielefebvre@free.fr",
+    "login": "felielefebvre@free.fr",
+    "Password": "iL0v€MyFonci@",
+    "roles": ["CO-OWNER"]
+  },
+
+  "Catherine": {
+    "email": "catherine.gandolf@foncia.com",
+    "login": "fr125347",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Catherine",
+    "lastName": "GANDOLF",
+    "role": "ACCOUNTANT",
+    "agency": [
+      "FONCIA PYRENEES GASCOGNE",
+      "FONCIA ROUSSILLON",
+      "FONCIA RIVES DE GARONNE"
+    ]
+  },
+  "Syrine": {
+    "email": "syrine.bensalem@foncia.com",
+    "login": "fr135333",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Syrine",
+    "lastName": "BENSALEM",
+    "role": "TRANSVERSAL_DIRECTOR",
+    "agency": "FONCIA AGENCE CENTRALE"
+  },
+  "Michel": {
+    "email": "michel.baumann@foncia.com",
+    "login": "fr101208",
+    "Password": "1L0v31000niuM*",
+    "firstName": "Michel",
+    "lastName": "BAUMANN",
+    "role": "ACCOUNTING_DIRECTOR",
+    "agency": "FONCIA VENDEE"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "env": {
+    "ADB": {
+      "BASE_URL": "http://localhost:8080",
+      "API_BASE_URL": "http://localhost:4000",
+      "MS_GATEWAY__BASE_URL": "http://localhost:4040"
+    },
+    "BO": {
+      "BASE_URL": "http://localhost:8081",
+      "API_BASE_URL": "http://localhost:4000",
+      "MS_GATEWAY__BASE_URL": "http://localhost:4040"
+    },
+    "MYFONCIA": {
+      "BASE_URL": "http://localhost:8083",
+      "API_BASE_URL": "http://localhost:4000"
+    },
+    "TRANSAC": {
+      "BASE_URL": "http://localhost:8085",
+      "API_BASE_URL": "http://localhost:3007",
+      "MS_ADDRESS_BASE_URL": "http://localhost:3014"
+    },
+    "MS_GATEWAY": {
+      "API_BASE_URL": "http://localhost:4040"
+    },
+    "REAL-ESTATE": {
+      "API_BASE_URL": "http://localhost:3027/real-estate"
+    },
+    "LEASE-ACCOUNTING": {
+      "API_BASE_URL": "http://localhost:3026/lease-accounting"
+    },
+    "TRANSAC-BO": {
+      "BASE_URL": "http://localhost:8086",
+      "API_BASE_URL": "http://localhost:3007"
+    }
+  }
+}

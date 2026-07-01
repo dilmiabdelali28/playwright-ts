@@ -1,0 +1,54 @@
+{
+  "precontractual": {
+    "originalFilename": "Document_information_precontractuel_08-07-2023_12_26_47.pdf",
+    "category": "newMandateDocuments",
+    "hashFile": "64a939e969f73f18a0c4c559",
+    "mimeType": "application/pdf",
+    "subCategory": "precontractual",
+    "msDocumentId": "64a939e86310fc7d4f0192a5",
+    "updatedAt": "2023-07-08T10:26:49.608Z",
+    "createdAt": "2023-07-08T10:26:48.959Z",
+    "signatures": { "isSigned": true, "isImported": true }
+  },
+  "waiver": {
+    "originalFilename": "Faculte renonciation PNO_08-07-2023_12_26_47.pdf",
+    "category": "newMandateDocuments",
+    "hashFile": "64a939e869f73f18a0c4c551",
+    "mimeType": "application/pdf",
+    "subCategory": "waiver",
+    "msDocumentId": "64a939e86310fc7d4f0192a9",
+    "updatedAt": "2023-07-08T10:26:48.959Z",
+    "createdAt": "2023-07-08T10:26:48.959Z"
+  },
+  "insurance": {
+    "originalFilename": "Assurance sérénité PNO_08-07-2023_12_26_47.pdf",
+    "category": "newMandateDocuments",
+    "hashFile": "64a939e869f73f18a0c4c553",
+    "mimeType": "application/pdf",
+    "subCategory": "insurance",
+    "msDocumentId": "64a939e86310fc7d4f0192ab",
+    "updatedAt": "2023-07-08T10:26:48.959Z",
+    "createdAt": "2023-07-08T10:26:48.959Z"
+  },
+  "appendix": {
+    "originalFilename": "Charte de protection des données_08-07-2023_12_26_47.pdf",
+    "category": "newMandateDocuments",
+    "hashFile": "64a939e869f73f18a0c4c555",
+    "mimeType": "application/pdf",
+    "subCategory": "appendix",
+    "msDocumentId": "64a939e86310fc7d4f0192ad",
+    "updatedAt": "2023-07-08T10:26:48.959Z",
+    "createdAt": "2023-07-08T10:26:48.959Z"
+  },
+  "mandate": {
+    "originalFilename": "Mandat_Classique_08-07-2023_12_26_47.pdf",
+    "category": "newMandateDocuments",
+    "hashFile": "64a93a0869f73f18a0c4c56e",
+    "mimeType": "application/pdf",
+    "subCategory": "mandate",
+    "msDocumentId": "64a939e86310fc7d4f0192a7",
+    "updatedAt": "2023-07-08T10:27:20.274Z",
+    "createdAt": "2023-07-08T10:26:48.959Z",
+    "signatures": { "isSigned": true, "isImported": true }
+  }
+}

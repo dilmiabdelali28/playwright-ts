@@ -1,0 +1,105 @@
+{
+  "barbatre": {
+    "_id": "5e5dafde0de8b924a9fe1338",
+    "totalImmoId": "2771",
+    "__v": 0,
+    "activity": {
+      "startDate": "2017-04-30T22:00:00.000Z",
+      "status": "OPEN"
+    },
+    "address": {
+      "completeAddress": "54 Rue du Centre 85630 Barbâtre France",
+      "address1": "54 Rue du Centre",
+      "zipCode": "85630",
+      "city": "Barbâtre",
+      "country": "France",
+      "countryCode": "FRA"
+    },
+    "agency": "5e5dafe0b84f4c4645020c81",
+    "anaelCode": "00167014",
+    "commercialName": "Foncia Vendée - Barbâtre",
+    "companyName": "Foncia Vendée - Barbâtre",
+    "companyNameAnalytic": "BARBÂTRE 54 Rue du Centre - FONCIA VENDEE",
+    "contact": {
+      "telephone": "+33251395021"
+    },
+    "createdAt": "2021-12-16T09:10:34.538Z",
+    "hours": [],
+    "lineOfBusinesses": ["GL", "LOCATION", "SEASONAL_RENTAL", "COOWNERSHIP"],
+    "listTotalImmoId": ["2771"],
+    "mainBranch": false,
+    "siren": "452396575",
+    "siret": "45239657500212",
+    "updatedAt": "2023-07-08T07:02:44.339Z",
+    "legacyGrouCodes": ["33S"]
+  },
+  "vaillant": {
+    "_id": "5e5dafde101332be2afe132d",
+    "totalImmoId": "2459",
+    "__v": 0,
+    "activity": {
+      "startDate": "2017-04-30T22:00:00.000Z",
+      "status": "OPEN"
+    },
+    "address": {
+      "completeAddress": "47 Avenue Edouard Vaillant 92100 Boulogne-Billancourt France",
+      "address1": "47 Avenue Edouard Vaillant",
+      "zipCode": "92100",
+      "city": "Boulogne-Billancourt",
+      "address2": "47-49",
+      "country": "France",
+      "countryCode": "FRA"
+    },
+    "agency": "5e5dafe018bb1b1dce020cb6",
+    "anaelCode": "00113013",
+    "commercialName": "Foncia Agence Centrale",
+    "companyName": "Foncia Agence Centrale - Vaillant",
+    "companyNameAnalytic": "VAILLANT 47 Avenue Edouard Vaillant - FONCIA AGENCE CENTRALE",
+    "contact": {
+      "telephone": "+33251395021"
+    },
+    "createdAt": "2021-12-16T09:10:34.538Z",
+    "hours": [],
+    "lineOfBusinesses": ["GL", "COOWNERSHIP"],
+    "listTotalImmoId": ["2459"],
+    "mainBranch": false,
+    "siren": "732035993",
+    "siret": "73203599300169",
+    "updatedAt": "2023-07-08T07:02:44.339Z",
+    "legacyGrouCodes": ["21E", "73V"]
+  },
+  "ac2": {
+    "_id": "5e5dafde101332be2afe132d",
+    "totalImmoId": "5650",
+    "__v": 0,
+    "activity": {
+      "startDate": "2017-04-30T22:00:00.000Z",
+      "endDate": "2025-11-30T23:00:00.000Z",
+      "status": "OPEN"
+    },
+    "address": {
+      "completeAddress": "40 Rue Gabriel Péri 92120 Montrouge France",
+      "address1": "40 Rue Gabriel Péri",
+      "zipCode": "92120",
+      "city": "Montrouge",
+      "address2": "",
+      "country": "France",
+      "countryCode": "FRA"
+    },
+    "agency": "5e5dafe018bb1b1dce020cb6",
+    "anaelCode": "00113016",
+    "commercialName": "Foncia Agence Centrale 2",
+    "companyName": "Foncia Agence Centrale 2",
+    "companyNameAnalytic": "VAILLANT 47 Avenue Edouard Vaillant - FONCIA AGENCE CENTRALE",
+    "contact": {
+      "telephone": "+33251395021"
+    },
+    "createdAt": "2021-12-16T09:10:34.538Z",
+    "lineOfBusinesses": ["GL", "LOCATION", "COOWNERSHIP"],
+    "mainBranch": false,
+    "siren": "732035993",
+    "siret": "73203599300169",
+    "updatedAt": "2023-07-08T07:02:44.339Z",
+    "legacyGrouCodes": ["76P", "65N"]
+  }
+}

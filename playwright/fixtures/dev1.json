@@ -1,0 +1,36 @@
+{
+  "env": {
+    "ADB": {
+      "BASE_URL": "https://foncia-adb.dev1.fonciamillenium.net",
+      "API_BASE_URL": "https://api.foncia-adb.dev1.fonciamillenium.net",
+      "MS_GATEWAY__BASE_URL": "https://ms-gateway.dev1.fonciamillenium.net"
+    },
+    "BO": {
+      "BASE_URL": "https://foncia-bo.dev1.fonciamillenium.net",
+      "API_BASE_URL": "https://api.foncia-bo.dev1.fonciamillenium.net"
+    },
+    "MYFONCIA": {
+      "BASE_URL": "https://my-foncia.dev1.fonciamillenium.net",
+      "API_BASE_URL": "https://myfoncia-gateway.dev1.fonciamillenium.net/graphql"
+    },
+    "TRANSAC": {
+      "BASE_URL": "https://foncia-transaction.dev1.fonciamillenium.net",
+      "API_BASE_URL": "https://foncia-transaction.dev1.fonciamillenium.net/api",
+      "MS_ADDRESS_BASE_URL": "https://foncia-transaction.dev1.fonciamillenium.net/api"
+    },
+    "MS_GATEWAY": {
+      "API_BASE_URL": "https://ms-gateway.dev1.fonciamillenium.net"
+    },
+    "REAL-ESTATE": {
+      "API_BASE_URL": "https://ms-real-estate.dev1.fonciamillenium.net/real-estate"
+    },
+    "LEASE-ACCOUNTING": {
+      "API_BASE_URL": "https://ms-lease-accounting.dev1.fonciamillenium.net/lease-accounting"
+    },
+    "TRANSAC-BO": {
+      "BASE_URL": "https://foncia-transaction-bo.dev1.fonciamillenium.net",
+      "API_BASE_URL": "https://foncia-transaction-bo.dev1.fonciamillenium.net/api",
+      "MS_ADDRESS_BASE_URL": "https://foncia-transaction-bo.dev1.fonciamillenium.net/api"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "_id": "63ebbeddfba9f731ee4af26f",
+  "status": "ACTIVE",
+  "address": {
+    "address1": "address1",
+    "address2": "address2",
+    "city": "Samoëns",
+    "completeAddress": "Route des vallons d'en bas",
+    "countryCode": "FRA",
+    "zipCode": "74340"
+  }
+}

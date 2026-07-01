@@ -1,0 +1,72 @@
+export const appartment1PayloadAGC = {
+  type: "APARTMENT",
+  subtype: "NC",
+  levels: [],
+  area: {
+    surface: 0,
+  },
+  category: "APARTMENT",
+  coOwnershipBylawsId: "1",
+  delivery: {
+    deliveryDate: "2023-12-14T13:24:15.290+0000",
+    delivered: true,
+  },
+  equipments: [],
+  entrance: {
+    address: {
+      completeAddress: "test immeuble neuf 75004 Paris",
+      address1: "test immeuble neuf",
+      zipCode: "75004",
+      city: "Paris",
+      countryCode: "FRA",
+    },
+    access: {
+      emitters: [],
+      pinpads: [],
+    },
+    equipments: [],
+    stairs: [],
+  },
+  unitLegacyNumber: "1",
+  unitNumber: "606044619",
+  version: 1,
+  stairs: [],
+  diagnostics: [],
+  createdAt: "2023-12-14T13:27:19.414+0000",
+  updatedAt: "2023-12-14T13:29:59.554+0000",
+  __v: 0,
+};
+export const appartment2PayloadAGC = {
+  type: "APARTMENT",
+  subtype: "NC",
+  levels: [],
+  area: {
+    surface: 0,
+  },
+  category: "APARTMENT",
+  coOwnershipBylawsId: "2",
+  equipments: [],
+  entrance: {
+    address: {
+      completeAddress: "2 test immeuble neuf 75004 Paris",
+      address1: "test immeuble neuf",
+      zipCode: "75004",
+      city: "Paris",
+      countryCode: "FRA",
+    },
+    access: {
+      emitters: [],
+      pinpads: [],
+    },
+    equipments: [],
+    stairs: [],
+  },
+  unitLegacyNumber: "2",
+  unitNumber: "606044620",
+  version: 1,
+  stairs: [],
+  diagnostics: [],
+  createdAt: "2023-12-14T13:27:19.414+0000",
+  updatedAt: "2023-12-14T13:29:59.554+0000",
+  __v: 0,
+};
