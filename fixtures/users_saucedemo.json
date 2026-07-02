@@ -1,0 +1,18 @@
+{
+  "Pascale": {
+    "login": "standard_user",
+    "password": "secret_sauce"
+  },
+  "Bloque": {
+    "login": "locked_out_user",
+    "password": "secret_sauce"
+  },
+  "Probleme": {
+    "login": "problem_user",
+    "password": "secret_sauce"
+  },
+  "Lente": {
+    "login": "performance_glitch_user",
+    "password": "secret_sauce"
+  }
+}

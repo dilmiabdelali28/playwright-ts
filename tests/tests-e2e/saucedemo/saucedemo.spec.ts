@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 import { SauceDemoPage } from "@/pages/saucedemo/saucedemo.page";
+import users from "$fixtures/users_saucedemo.json";
+
+const Pascale = users.Pascale;
+const Bloque = users.Bloque;
 
 test.describe("Sauce Demo", () => {
   let saucedemo: SauceDemoPage;
@@ -15,7 +19,7 @@ test.describe("Sauce Demo", () => {
     { tag: ["@smoke", "@saucedemo"] },
     async ({ page }) => {
       await test.step("il se connecte avec standard_user", async () => {
-        await saucedemo.login("standard_user", "secret_sauce");
+        await saucedemo.login(Pascale.login, Pascale.password);
       });
 
       await test.step("il atterrit sur la page inventaire", async () => {
@@ -30,7 +34,7 @@ test.describe("Sauce Demo", () => {
     { tag: ["@smoke", "@saucedemo"] },
     async ({ page }) => {
       await test.step("il tente de se connecter avec locked_out_user", async () => {
-        await saucedemo.login("locked_out_user", "secret_sauce");
+        await saucedemo.login(Bloque.login, Bloque.password);
       });
 
       await test.step("un message d'erreur s'affiche et il reste sur le login", async () => {
@@ -48,7 +52,7 @@ test.describe("Sauce Demo", () => {
     { tag: ["@saucedemo"] },
     async () => {
       await test.step("il se connecte avec standard_user", async () => {
-        await saucedemo.login("standard_user", "secret_sauce");
+        await saucedemo.login(Pascale.login, Pascale.password);
         await expect(saucedemo.inventoryList).toBeVisible();
       });
 
