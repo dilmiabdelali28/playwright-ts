@@ -62,7 +62,7 @@ jobs:
           ref: ${{ env.PAGES_BRANCH }}
           path: gh-pages
 
-      - name: Build versioned report + history index
+      - name: Build versioned report + dashboard
         if: always()
         run: |
           set -e
@@ -81,7 +81,7 @@ jobs:
           npm run allure:generate   # -> report/allure-report
 
           # 3. Compute this run's stats and store them next to the report,
-          #    so the index page can show status/counters per run.
+          #    so the dashboard can show status/counters per run.
           SUMMARY="report/allure-report/widgets/summary.json"
           if [ -f "$SUMMARY" ]; then
             PASSED=$(jq '.statistic.passed'  "$SUMMARY")
@@ -92,9 +92,10 @@ jobs:
           else
             PASSED=0; FAILED=0; BROKEN=0; SKIPPED=0; TOTAL=0
           fi
+          FLAKY=$(find report/allure-results -name '*-result.json' -exec jq -r 'select(.flaky==true)|1' {} + 2>/dev/null | grep -c 1 || true)
           if [ "$((FAILED + BROKEN))" -gt 0 ]; then STATUS="failed"; else STATUS="passed"; fi
           cat > report/allure-report/meta.json <<EOF
-          {"run":"$RUN","branch":"$BRANCH","status":"$STATUS","passed":$PASSED,"failed":$FAILED,"broken":$BROKEN,"skipped":$SKIPPED,"total":$TOTAL,"date":"$DATE"}
+          {"run":"$RUN","branch":"$BRANCH","status":"$STATUS","passed":$PASSED,"failed":$FAILED,"broken":$BROKEN,"flaky":$FLAKY,"skipped":$SKIPPED,"total":$TOTAL,"date":"$DATE"}
           EOF
 
           # 4. Assemble the full branch content in ./public (never copy .git).
@@ -102,9 +103,11 @@ jobs:
           if [ -d gh-pages ]; then
             find gh-pages -mindepth 1 -maxdepth 1 ! -name '.git' -exec cp -r {} public/ \;
           fi
-          # Add / replace this run's report under its own numbered folder.
-          rm -rf "public/$RUN"
+          # Add / replace this run's report under its own numbered folder,
+          # and mirror it under the stable /latest/ URL.
+          rm -rf "public/$RUN" public/latest
           cp -r report/allure-report "public/$RUN"
+          cp -r report/allure-report public/latest
           # Refresh last-history for the next run's trend.
           rm -rf public/last-history
           mkdir -p public/last-history
@@ -117,36 +120,62 @@ jobs:
             rm -rf "public/$old"
           done
 
-          # 5. Rebuild the home page listing every run (newest first).
-          {
-            echo '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
-            echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
-            echo '<title>Historique des rapports Playwright</title><style>'
-            echo 'body{font-family:-apple-system,Segoe UI,sans-serif;background:#f0f4f8;margin:0;padding:40px 16px}'
-            echo '.wrap{max-width:680px;margin:0 auto}h1{color:#1a2340;text-align:center}'
-            echo 'a.run{display:flex;justify-content:space-between;align-items:center;background:#fff;'
-            echo 'border-radius:10px;padding:14px 18px;margin:8px 0;text-decoration:none;color:#1a2340;'
-            echo 'box-shadow:0 1px 4px rgba(0,0,0,.08)}a.run:hover{box-shadow:0 3px 10px rgba(0,0,0,.14)}'
-            echo '.left{display:flex;align-items:center;gap:12px}.icon{font-size:1.3rem}'
-            echo '.meta{font-size:.8rem;color:#9aa4b2}.stat{font-size:.75rem;font-weight:600;'
-            echo 'padding:2px 8px;border-radius:10px;margin-left:6px}.pass{background:#dcfce7;color:#16a34a}'
-            echo '.fail{background:#fee2e2;color:#dc2626}</style></head><body><div class="wrap">'
-            echo '<h1>🎭 Historique des rapports</h1>'
-            for d in $(ls -1 public | grep -E '^[0-9]+$' | sort -rn); do
-              M="public/$d/meta.json"
-              if [ -f "$M" ]; then
-                st=$(jq -r '.status' "$M"); p=$(jq -r '.passed' "$M"); f=$(jq -r '.failed' "$M")
-                br=$(jq -r '.branch' "$M"); dt=$(jq -r '.date' "$M")
-                if [ "$st" = "passed" ]; then ic="✅"; else ic="❌"; fi
-              else
-                ic="⬜"; p="-"; f="-"; br=""; dt=""
-              fi
-              echo "<a class=\"run\" href=\"./$d/\"><span class=\"left\"><span class=\"icon\">$ic</span>"
-              echo "<span><strong>Run #$d</strong><br><span class=\"meta\">$br · $dt</span></span></span>"
-              echo "<span><span class=\"stat pass\">$p ✓</span><span class=\"stat fail\">$f ✗</span></span></a>"
-            done
-            echo '</div></body></html>'
-          } > public/index.html
+          # 5. Build the dashboard home page (hero + latest stats + history list).
+          #    Hero uses THIS run's numbers; history cards read each run's meta.json.
+          if [ "$((FAILED + BROKEN))" -gt 0 ]; then HERO_CLASS="has-failures"; HERO_TITLE="Failed run"; else HERO_CLASS="passing"; HERO_TITLE="Passed run"; fi
+          HISTORY_ITEMS=""
+          for d in $(ls -1 public | grep -E '^[0-9]+$' | sort -rn); do
+            M="public/$d/meta.json"
+            if [ -f "$M" ]; then
+              st=$(jq -r '.status' "$M"); p=$(jq -r '.passed' "$M"); f=$(jq -r '.failed' "$M")
+              b=$(jq -r '.broken' "$M"); fl=$(jq -r '.flaky' "$M"); br=$(jq -r '.branch' "$M"); dt=$(jq -r '.date' "$M")
+              if [ "$st" = "passed" ]; then ic="✅"; col="#16a34a"; else ic="❌"; col="#dc2626"; fi
+            else
+              ic="⬜"; col="#6b7280"; p="-"; f="-"; b="-"; fl="-"; br=""; dt=""
+            fi
+            HISTORY_ITEMS="${HISTORY_ITEMS}<a href=\"./$d/\"><span class=\"h-left\"><span class=\"h-icon\">$ic</span><span class=\"h-info\"><span class=\"h-run\" style=\"color:$col\">Run #$d</span><span class=\"h-meta\">$br${dt:+ · }$dt</span></span></span><span class=\"h-right\"><span class=\"h-stat passed\">$p passed</span><span class=\"h-stat failed\">$f failed</span><span class=\"h-stat broken\">$b broken</span><span class=\"h-stat flaky\">$fl flaky</span><span class=\"arrow\">→</span></span></a>"
+          done
+
+          cat > public/index.html <<HTMLEOF
+          <!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+          <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎭</text></svg>">
+          <title>Playwright Reports</title>
+          <style>
+            *{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh}
+            .hero{background:linear-gradient(180deg,#a8c8f0 0%,#ccdff5 35%,#e8f1fb 65%,#f0f4f8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px 70px;text-align:center}
+            .logo h1{font-size:2rem;color:#1a2340;font-weight:700}.logo .subtitle{color:#6b7a9a;font-size:.85rem;letter-spacing:.12em;text-transform:uppercase;margin-top:6px}
+            .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:32px 0}
+            .pill{background:#fff;border-radius:20px;padding:8px 18px;font-size:.875rem;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+            .pill.passed{color:#16a34a}.pill.failed{color:#dc2626}.pill.flaky{color:#ea580c}.pill.broken{color:#d97706}.pill.total{color:#2563eb}
+            .card-latest{background:rgba(255,255,255,.9);border-radius:14px;padding:26px 32px;text-decoration:none;max-width:480px;width:100%;box-shadow:0 6px 24px rgba(0,0,0,.1);display:block}
+            .card-latest .icon{font-size:2rem;margin-bottom:10px}.card-latest h2{font-size:1.25rem;margin-bottom:6px}.card-latest h2.passing{color:#16a34a}.card-latest h2.has-failures{color:#dc2626}
+            .card-latest .desc{color:#6b7280;font-size:.875rem}.card-latest .branch{color:#9ca3af;font-size:.8rem}
+            .content{max-width:800px;margin:0 auto;padding:40px 20px;width:100%}
+            .section-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:12px;font-weight:600}
+            .history-list{display:flex;flex-direction:column;gap:6px}
+            .history-list a{background:#fff;border-radius:8px;padding:14px 18px;text-decoration:none;color:#374151;display:flex;justify-content:space-between;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+            .h-left{display:flex;align-items:center;gap:12px}.h-icon{font-size:1.2rem}.h-info{display:flex;flex-direction:column;gap:2px}
+            .h-run{font-size:.9rem;font-weight:600}.h-meta{font-size:.75rem;color:#9ca3af}.h-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+            .h-stat{font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:10px}.h-stat.passed{background:#dcfce7;color:#16a34a}.h-stat.failed{background:#fee2e2;color:#dc2626}
+            .h-stat.broken{background:#fef3c7;color:#d97706}.h-stat.flaky{background:#ffedd5;color:#ea580c}.arrow{color:#d1d5db;margin-left:8px}
+            footer{background:#1a2340;color:#6b7a9a;padding:28px 20px;text-align:center;font-size:.85rem;margin-top:20px}
+          </style></head><body>
+            <div class="hero">
+              <div class="logo"><h1>🎭 Playwright Reports</h1><div class="subtitle">E2E · SauceDemo</div></div>
+              <div class="stats">
+                <span class="pill passed">✅ $PASSED passed</span><span class="pill failed">❌ $FAILED failed</span>
+                <span class="pill broken">💥 $BROKEN broken</span><span class="pill flaky">🔥 $FLAKY flaky</span><span class="pill total">📊 $TOTAL total</span>
+              </div>
+              <a href="./latest/" class="card-latest"><div class="icon">🚀</div><h2 class="$HERO_CLASS">$HERO_TITLE — Run #$RUN</h2>
+                <div class="desc">Rapport Allure complet du dernier run</div><div class="branch">Branch: $BRANCH · $DATE</div></a>
+            </div>
+            <div class="content">
+              <div class="section-title">Historique — $KEEP_REPORTS derniers runs</div>
+              <div class="history-list">$HISTORY_ITEMS</div>
+            </div>
+            <footer>Playwright · GitHub Actions</footer>
+          </body></html>
+          HTMLEOF
 
       - name: Deploy to GitHub Pages
         if: always()
