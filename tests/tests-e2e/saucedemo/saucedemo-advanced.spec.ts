@@ -15,13 +15,25 @@ test.describe("Sauce Demo — parcours avancés", () => {
     await expect(saucedemo.inventoryList).toBeVisible();
   });
 
+  // Jeu de données (JDD) consommé par les tests ci-dessous.
+  const products = {
+    backpack: "Sauce Labs Backpack",
+    bikeLight: "Sauce Labs Bike Light",
+    boltTshirt: "Sauce Labs Bolt T-Shirt",
+  };
+  const checkout = {
+    firstName: "Pascale",
+    lastName: "Test",
+    postalCode: "75001",
+  };
+
   test(
     "parcours de commande complet jusqu'à la confirmation",
-    { tag: ["@saucedemo", "@e2e"] },
+    { tag: ["@smoke", "@e2e"] },
     async ({ page }) => {
       await test.step("il ajoute deux produits au panier", async () => {
-        await saucedemo.addProductToCart("Sauce Labs Backpack");
-        await saucedemo.addProductToCart("Sauce Labs Bike Light");
+        await saucedemo.addProductToCart(products.backpack);
+        await saucedemo.addProductToCart(products.bikeLight);
         await expect(saucedemo.cartBadge).toHaveText("2");
       });
 
@@ -31,7 +43,11 @@ test.describe("Sauce Demo — parcours avancés", () => {
       });
 
       await test.step("il finalise la commande", async () => {
-        await saucedemo.checkout("Pascale", "Test", "75001");
+        await saucedemo.checkout(
+          checkout.firstName,
+          checkout.lastName,
+          checkout.postalCode,
+        );
       });
 
       await test.step("la commande est confirmée", async () => {
@@ -45,7 +61,7 @@ test.describe("Sauce Demo — parcours avancés", () => {
 
   test(
     "le tri par prix croissant ordonne bien les produits",
-    { tag: ["@saucedemo"] },
+    { tag: ["@smoke"] },
     async () => {
       await test.step("il trie par prix croissant (low to high)", async () => {
         await saucedemo.sortBy("lohi");
@@ -61,7 +77,7 @@ test.describe("Sauce Demo — parcours avancés", () => {
 
   test(
     "le tri par nom décroissant (Z à A) ordonne bien les produits",
-    { tag: ["@saucedemo"] },
+    { tag: ["@smoke"] },
     async () => {
       await saucedemo.sortBy("za");
       const names = await saucedemo.productNames();
@@ -72,17 +88,17 @@ test.describe("Sauce Demo — parcours avancés", () => {
 
   test(
     "retirer un article depuis le panier met à jour le badge",
-    { tag: ["@saucedemo"] },
+    { tag: ["@smoke"] },
     async () => {
       await test.step("il ajoute deux articles", async () => {
-        await saucedemo.addProductToCart("Sauce Labs Backpack");
-        await saucedemo.addProductToCart("Sauce Labs Bolt T-Shirt");
+        await saucedemo.addProductToCart(products.backpack);
+        await saucedemo.addProductToCart(products.boltTshirt);
         await expect(saucedemo.cartBadge).toHaveText("2");
       });
 
       await test.step("il retire un article dans le panier", async () => {
         await saucedemo.openCart();
-        await saucedemo.removeProductFromCart("Sauce Labs Backpack");
+        await saucedemo.removeProductFromCart(products.backpack);
       });
 
       await test.step("le panier ne contient plus qu'un article", async () => {
@@ -94,9 +110,9 @@ test.describe("Sauce Demo — parcours avancés", () => {
 
   test(
     "le checkout refuse un formulaire incomplet",
-    { tag: ["@saucedemo"] },
+    { tag: ["@smoke"] },
     async () => {
-      await saucedemo.addProductToCart("Sauce Labs Backpack");
+      await saucedemo.addProductToCart(products.backpack);
       await saucedemo.openCart();
       await saucedemo.checkoutButton.click();
 
@@ -114,7 +130,7 @@ test.describe("Sauce Demo — parcours avancés", () => {
 
   test(
     "la déconnexion ramène à la page de login",
-    { tag: ["@saucedemo"] },
+    { tag: ["@smoke"] },
     async ({ page }) => {
       await saucedemo.logout();
       await expect(page).toHaveURL("https://www.saucedemo.com/");
