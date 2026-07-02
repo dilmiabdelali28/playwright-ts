@@ -133,7 +133,7 @@ test.describe("Sauce Demo — parcours avancés", () => {
     { tag: ["@smoke"] },
     async ({ page }) => {
       await saucedemo.logout();
-      await expect(page).toHaveURL("https://www.saucedemo.com/");
+      await expect(page).toHaveURL("/");
       await expect(saucedemo.loginButton).toBeVisible();
     },
   );

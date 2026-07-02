@@ -1,10 +1,9 @@
 import { type Page, type Locator } from "@playwright/test";
 
-const BASE_URL = "https://www.saucedemo.com/";
-
 /**
  * Page object for the Sauce Demo app (https://www.saucedemo.com/).
  * Groups the login screen, inventory, cart, checkout and menu interactions.
+ * The base URL is configured in playwright.config.ts (`use.baseURL`).
  */
 export class SauceDemoPage {
   // Login
@@ -66,9 +65,9 @@ export class SauceDemoPage {
     this.logoutLink = page.locator("#logout_sidebar_link");
   }
 
-  /** Opens the login page. */
+  /** Opens the login page (resolved against `use.baseURL`). */
   async goto(): Promise<void> {
-    await this.page.goto(BASE_URL);
+    await this.page.goto("/");
   }
 
   /** Fills credentials and submits the login form. */

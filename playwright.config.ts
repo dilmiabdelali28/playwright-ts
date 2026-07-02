@@ -18,6 +18,7 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 10_000 },
   use: {
+    baseURL: "https://www.saucedemo.com/",
     actionTimeout: 5_000,
     navigationTimeout: 10_000,
     headless: true,
