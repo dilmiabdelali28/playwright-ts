@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"23bafd0dbb525e8129c519a48cc469a2","name":"tests-e2e/saucedemo/saucedemo-advanced.spec.ts","statistic":{"failed":0,"broken":0,"skipped":0,"passed":6,"unknown":0,"total":6}},{"uid":"8044ccd865af31ab6681c1208f399c48","name":"tests-e2e/saucedemo/saucedemo.spec.ts","statistic":{"failed":0,"broken":0,"skipped":0,"passed":2,"unknown":0,"total":2}}]}
