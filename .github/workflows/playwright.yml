@@ -16,6 +16,8 @@ env:
   FEATURE: "all"
   ALLURE_VERSION: "2.19.0"
   EXECUTE_TYPE: "CI"
+  # Branch used as the GitHub Pages source.
+  PAGES_BRANCH: "gh-pages-all"
 
 # Ensures that only one deploy task per branch/environment will run at a time.
 concurrency:
@@ -48,33 +50,104 @@ jobs:
         #   SCENARIOS_NOTPARALLEL_EXECUTION: ${{ secrets.SCENARIOS_NOTPARALLEL_EXECUTION }}
         run: npm run test:smoke
 
-      - name: Get Allure history for history trend
+      # Pull the current Pages branch: it holds every past run in a numbered
+      # subfolder plus `last-history/` (the Allure trend carried between runs).
+      - name: Checkout Pages branch
         uses: actions/checkout@v4
         if: always()
         continue-on-error: true
         with:
-          ref: gh-pages-all
-          path: allure-history
+          ref: ${{ env.PAGES_BRANCH }}
+          path: gh-pages
 
-      - name: Setup Allure report
-        uses: simple-elf/allure-report-action@master
+      - name: Build versioned report + history index
         if: always()
-        id: allure-report
-        continue-on-error: true
-        with:
-          allure_results: report/allure-results
-          gh_pages: gh-pages-all
-          allure_report: allure-report
-          allure_history: allure-history
-          keep_reports: 5
+        run: |
+          set -e
+          RUN="${{ github.run_number }}"
+          BRANCH="${{ github.ref_name }}"
+          DATE="$(date '+%Y-%m-%d %H:%M')"
 
-      - name: Deploy report to GitHub Pages
+          # 1. Carry the Allure trend forward: feed the previous run's history
+          #    back into the raw results so the new report keeps its curves.
+          if [ -d gh-pages/last-history ]; then
+            mkdir -p report/allure-results/history
+            cp -r gh-pages/last-history/. report/allure-results/history/
+          fi
+
+          # 2. Turn the raw results (JSON) into the HTML report.
+          npm run allure:generate   # -> report/allure-report
+
+          # 3. Compute this run's stats and store them next to the report,
+          #    so the index page can show status/counters per run.
+          SUMMARY="report/allure-report/widgets/summary.json"
+          if [ -f "$SUMMARY" ]; then
+            PASSED=$(jq '.statistic.passed'  "$SUMMARY")
+            FAILED=$(jq '.statistic.failed'  "$SUMMARY")
+            BROKEN=$(jq '.statistic.broken'  "$SUMMARY")
+            SKIPPED=$(jq '.statistic.skipped' "$SUMMARY")
+            TOTAL=$(jq '.statistic.total'    "$SUMMARY")
+          else
+            PASSED=0; FAILED=0; BROKEN=0; SKIPPED=0; TOTAL=0
+          fi
+          if [ "$((FAILED + BROKEN))" -gt 0 ]; then STATUS="failed"; else STATUS="passed"; fi
+          cat > report/allure-report/meta.json <<EOF
+          {"run":"$RUN","branch":"$BRANCH","status":"$STATUS","passed":$PASSED,"failed":$FAILED,"broken":$BROKEN,"skipped":$SKIPPED,"total":$TOTAL,"date":"$DATE"}
+          EOF
+
+          # 4. Assemble the full branch content in ./public (never copy .git).
+          mkdir -p public
+          if [ -d gh-pages ]; then
+            find gh-pages -mindepth 1 -maxdepth 1 ! -name '.git' -exec cp -r {} public/ \;
+          fi
+          # Add / replace this run's report under its own numbered folder.
+          rm -rf "public/$RUN"
+          cp -r report/allure-report "public/$RUN"
+          # Refresh last-history for the next run's trend.
+          rm -rf public/last-history
+          mkdir -p public/last-history
+          if [ -d report/allure-report/history ]; then
+            cp -r report/allure-report/history/. public/last-history/
+          fi
+
+          # 5. Rebuild the home page listing every run (newest first).
+          {
+            echo '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8">'
+            echo '<meta name="viewport" content="width=device-width, initial-scale=1">'
+            echo '<title>Historique des rapports Playwright</title><style>'
+            echo 'body{font-family:-apple-system,Segoe UI,sans-serif;background:#f0f4f8;margin:0;padding:40px 16px}'
+            echo '.wrap{max-width:680px;margin:0 auto}h1{color:#1a2340;text-align:center}'
+            echo 'a.run{display:flex;justify-content:space-between;align-items:center;background:#fff;'
+            echo 'border-radius:10px;padding:14px 18px;margin:8px 0;text-decoration:none;color:#1a2340;'
+            echo 'box-shadow:0 1px 4px rgba(0,0,0,.08)}a.run:hover{box-shadow:0 3px 10px rgba(0,0,0,.14)}'
+            echo '.left{display:flex;align-items:center;gap:12px}.icon{font-size:1.3rem}'
+            echo '.meta{font-size:.8rem;color:#9aa4b2}.stat{font-size:.75rem;font-weight:600;'
+            echo 'padding:2px 8px;border-radius:10px;margin-left:6px}.pass{background:#dcfce7;color:#16a34a}'
+            echo '.fail{background:#fee2e2;color:#dc2626}</style></head><body><div class="wrap">'
+            echo '<h1>🎭 Historique des rapports</h1>'
+            for d in $(ls -1 public | grep -E '^[0-9]+$' | sort -rn); do
+              M="public/$d/meta.json"
+              if [ -f "$M" ]; then
+                st=$(jq -r '.status' "$M"); p=$(jq -r '.passed' "$M"); f=$(jq -r '.failed' "$M")
+                br=$(jq -r '.branch' "$M"); dt=$(jq -r '.date' "$M")
+                if [ "$st" = "passed" ]; then ic="✅"; else ic="❌"; fi
+              else
+                ic="⬜"; p="-"; f="-"; br=""; dt=""
+              fi
+              echo "<a class=\"run\" href=\"./$d/\"><span class=\"left\"><span class=\"icon\">$ic</span>"
+              echo "<span><strong>Run #$d</strong><br><span class=\"meta\">$br · $dt</span></span></span>"
+              echo "<span><span class=\"stat pass\">$p ✓</span><span class=\"stat fail\">$f ✗</span></span></a>"
+            done
+            echo '</div></body></html>'
+          } > public/index.html
+
+      - name: Deploy to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: allure-report
-          publish_branch: gh-pages-all
+          publish_dir: public
+          publish_branch: ${{ env.PAGES_BRANCH }}
           user_name: 'GitHub Actions'
           user_email: 'actions@github.com'
-          commit_message: 'Deploy Allure report to gh-pages-all branch'
+          commit_message: 'Deploy report for run #${{ github.run_number }}'
