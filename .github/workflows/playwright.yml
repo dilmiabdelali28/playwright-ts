@@ -64,11 +64,19 @@ jobs:
 
       - name: Build versioned report + dashboard
         if: always()
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           set -e
           RUN="${{ github.run_number }}"
           BRANCH="${{ github.ref_name }}"
           DATE="$(date '+%Y-%m-%d %H:%M')"
+          SHA_SHORT="${COMMIT_SHA:0:7}"
+          COMMIT_SUBJECT="$(printf '%s' "$COMMIT_MSG" | head -n1)"
 
           # 1. Carry the Allure trend forward: feed the previous run's history
           #    back into the raw results so the new report keeps its curves.
@@ -94,9 +102,14 @@ jobs:
           fi
           FLAKY=$(find report/allure-results -name '*-result.json' -exec jq -r 'select(.flaky==true)|1' {} + 2>/dev/null | grep -c 1 || true)
           if [ "$((FAILED + BROKEN))" -gt 0 ]; then STATUS="failed"; else STATUS="passed"; fi
-          cat > report/allure-report/meta.json <<EOF
-          {"run":"$RUN","branch":"$BRANCH","status":"$STATUS","passed":$PASSED,"failed":$FAILED,"broken":$BROKEN,"flaky":$FLAKY,"skipped":$SKIPPED,"total":$TOTAL,"date":"$DATE"}
-          EOF
+          jq -n \
+            --arg run "$RUN" --arg branch "$BRANCH" --arg status "$STATUS" \
+            --argjson passed "$PASSED" --argjson failed "$FAILED" --argjson broken "$BROKEN" \
+            --argjson flaky "$FLAKY" --argjson skipped "$SKIPPED" --argjson total "$TOTAL" \
+            --arg date "$DATE" --arg sha "$SHA_SHORT" --arg subject "$COMMIT_SUBJECT" \
+            --arg pr "$PR_NUMBER" --arg repo "$REPO_URL" --arg runid "$RUN_ID" \
+            '{run:$run,branch:$branch,status:$status,passed:$passed,failed:$failed,broken:$broken,flaky:$flaky,skipped:$skipped,total:$total,date:$date,sha:$sha,subject:$subject,pr:$pr,repo:$repo,runid:$runid}' \
+            > report/allure-report/meta.json
 
           # 4. Assemble the full branch content in ./public (never copy .git).
           mkdir -p public
@@ -129,11 +142,13 @@ jobs:
             if [ -f "$M" ]; then
               st=$(jq -r '.status' "$M"); p=$(jq -r '.passed' "$M"); f=$(jq -r '.failed' "$M")
               b=$(jq -r '.broken' "$M"); fl=$(jq -r '.flaky' "$M"); br=$(jq -r '.branch' "$M"); dt=$(jq -r '.date' "$M")
+              sha=$(jq -r '.sha // ""' "$M"); pr=$(jq -r '.pr // ""' "$M")
               if [ "$st" = "passed" ]; then ic="✅"; col="#16a34a"; else ic="❌"; col="#dc2626"; fi
             else
-              ic="⬜"; col="#6b7280"; p="-"; f="-"; b="-"; fl="-"; br=""; dt=""
+              ic="⬜"; col="#6b7280"; p="-"; f="-"; b="-"; fl="-"; br=""; dt=""; sha=""; pr=""
             fi
-            HISTORY_ITEMS="${HISTORY_ITEMS}<a href=\"./$d/\"><span class=\"h-left\"><span class=\"h-icon\">$ic</span><span class=\"h-info\"><span class=\"h-run\" style=\"color:$col\">Run #$d</span><span class=\"h-meta\">$br${dt:+ · }$dt</span></span></span><span class=\"h-right\"><span class=\"h-stat passed\">$p passed</span><span class=\"h-stat failed\">$f failed</span><span class=\"h-stat broken\">$b broken</span><span class=\"h-stat flaky\">$fl flaky</span><span class=\"arrow\">→</span></span></a>"
+            SUB="$br${dt:+ · }$dt${sha:+ · commit }$sha${pr:+ · PR #}$pr"
+            HISTORY_ITEMS="${HISTORY_ITEMS}<a href=\"./$d/\"><span class=\"h-left\"><span class=\"h-icon\">$ic</span><span class=\"h-info\"><span class=\"h-run\" style=\"color:$col\">Run #$d</span><span class=\"h-meta\">$SUB</span></span></span><span class=\"h-right\"><span class=\"h-stat passed\">$p passed</span><span class=\"h-stat failed\">$f failed</span><span class=\"h-stat broken\">$b broken</span><span class=\"h-stat flaky\">$fl flaky</span><span class=\"arrow\">→</span></span></a>"
           done
 
           cat > public/index.html <<HTMLEOF
@@ -166,8 +181,8 @@ jobs:
                 <span class="pill passed">✅ $PASSED passed</span><span class="pill failed">❌ $FAILED failed</span>
                 <span class="pill broken">💥 $BROKEN broken</span><span class="pill flaky">🔥 $FLAKY flaky</span><span class="pill total">📊 $TOTAL total</span>
               </div>
-              <a href="./latest/" class="card-latest"><div class="icon">🚀</div><h2 class="$HERO_CLASS">$HERO_TITLE — Run #$RUN</h2>
-                <div class="desc">Rapport Allure complet du dernier run</div><div class="branch">Branch: $BRANCH · $DATE</div></a>
+              <a href="./latest/" class="card-latest"><div class="icon">🚀</div><h2 class="$HERO_CLASS">$HERO_TITLE — Run #$RUN — résultats complets Allure</h2>
+                <div class="desc">$COMMIT_SUBJECT</div><div class="branch">Branch: $BRANCH · commit $SHA_SHORT${PR_NUMBER:+ · PR #$PR_NUMBER} · $DATE</div></a>
             </div>
             <div class="content">
               <div class="section-title">Historique — $KEEP_REPORTS derniers runs</div>
