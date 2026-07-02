@@ -1,1 +1,1 @@
-[]
+[{"uid":"122b1cc4c9c8a4d3","name":"un utilisateur bloqué voit un message d'erreur","time":{"start":1782978940635,"stop":1782978944194,"duration":3559},"status":"passed","severity":"normal"},{"uid":"13ead43e4431f19","name":"un utilisateur valide se connecte et voit l'inventaire","time":{"start":1782978940613,"stop":1782978944326,"duration":3713},"status":"passed","severity":"normal"}]
