@@ -1,0 +1,17 @@
+{
+  "run": "111",
+  "branch": "main",
+  "status": "passed",
+  "passed": 8,
+  "failed": 0,
+  "broken": 0,
+  "flaky": 0,
+  "skipped": 0,
+  "total": 8,
+  "date": "2026-10-26 18:31",
+  "sha": "64919c5",
+  "subject": "",
+  "pr": "",
+  "repo": "https://github.com/dilmiabdelali28/playwright-ts",
+  "runid": "40378289702"
+}
